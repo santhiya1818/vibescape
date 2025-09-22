@@ -1,0 +1,101 @@
+[
+  {
+    "_id": "song_1755346241624",
+    "title": "Smart",
+    "artist": "LE SSERAFIM",
+    "genre": "K-Pop",
+    "emotion": "Happy",
+    "file": "songs/1755346241440-smart.mp3",
+    "art": "songpic/1755346241268-smart.png",
+    "artistArt": "artistpic/1755346241340-lesserafim.png",
+    "uploadDate": "2025-08-16T12:10:41.624Z"
+  },
+  {
+    "_id": "song_1755346348521",
+    "title": "Anti-fragile",
+    "artist": "LE SSERAFIM",
+    "genre": "K-Pop",
+    "emotion": "Happy",
+    "file": "songs/1755346347993-Antifragile.m4a",
+    "art": "songpic/1755346347762-antifragile.png",
+    "artistArt": "artistpic/1755346347846-lesserafim.png",
+    "uploadDate": "2025-08-16T12:12:28.521Z"
+  },
+  {
+    "_id": "song_1755354435090",
+    "title": "Fairytale",
+    "artist": "Alexander Rybak",
+    "genre": "Melody",
+    "emotion": "Happy",
+    "file": "songs/1755354432221-Fairytale.m4a",
+    "art": "songpic/1755354432189-fairytale.png",
+    "artistArt": "artistpic/1755354432199-rybak.png",
+    "uploadDate": "2025-08-16T14:27:15.090Z"
+  },
+  {
+    "_id": "song_1755354800468",
+    "title": "Bang Bang Bang",
+    "artist": "Big Bang",
+    "genre": "K-Pop",
+    "emotion": "Angry",
+    "file": "songs/1755354800391-BangBangBang.m4a",
+    "art": "songpic/1755354800321-bangbangbang.png",
+    "artistArt": "artistpic/1755354800336-bigbang.png",
+    "uploadDate": "2025-08-16T14:33:20.468Z"
+  },
+  {
+    "_id": "song_1755355086294",
+    "title": "Skyfall",
+    "artist": "Adele",
+    "genre": "Melody",
+    "emotion": "Sad",
+    "file": "songs/1755355086181-Skyfall.m4a",
+    "art": "songpic/1755355086140-skyfall.png",
+    "artistArt": "artistpic/1755355086150-adele.png",
+    "uploadDate": "2025-08-16T14:38:06.294Z"
+  },
+  {
+    "_id": "song_1755355287559",
+    "title": "Rasputin",
+    "artist": "Boney M.",
+    "genre": "Disco",
+    "emotion": "Happy",
+    "file": "songs/1755355287430-Rasputin.m4a",
+    "art": "songpic/1755355287411-rasputin.png",
+    "artistArt": "artistpic/1755355287423-boneyM.png",
+    "uploadDate": "2025-08-16T14:41:27.559Z"
+  },
+  {
+    "_id": "song_1755355509961",
+    "title": "Matushka",
+    "artist": "Tatyana Kurtukova",
+    "genre": "Classical",
+    "emotion": "Happy",
+    "file": "songs/1755355509910-Matushka.m4a",
+    "art": "songpic/1755355509884-matushka.png",
+    "artistArt": "artistpic/1755355509902-tatiana.png",
+    "uploadDate": "2025-08-16T14:45:09.961Z"
+  },
+  {
+    "_id": "song_1755355624225",
+    "title": "Loro",
+    "artist": "TRI.BE",
+    "genre": "K-Pop",
+    "emotion": "Surprised",
+    "file": "songs/1755355624145-Loro.m4a",
+    "art": "songpic/1755355624103-loro.png",
+    "artistArt": "artistpic/1755355624129-tri.be.png",
+    "uploadDate": "2025-08-16T14:47:04.225Z"
+  },
+  {
+    "_id": "song_1755355753867",
+    "title": "Shoot To Thrill",
+    "artist": "AC/DC",
+    "genre": "Rock",
+    "emotion": "Angry",
+    "file": "songs/1755355753646-ShootToThrill.m4a",
+    "art": "songpic/1755355753619-shoottothrill.png",
+    "artistArt": "artistpic/1755355753627-acdc.png",
+    "uploadDate": "2025-08-16T14:49:13.867Z"
+  }
+]

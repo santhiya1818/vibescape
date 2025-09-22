@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Favourites | VibeScape</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Your existing CSS is perfect and remains unchanged */
+    :root { --header-bg-color: #222; --footer-bg-color: #222; --text-color: #f1e6e6; --highlight-text-color: #ffffff; --card-bg: #dd0580; --accent: #e30088; --muted: #888; --range-track: #ddd; --range-thumb: #e30088; --page-bg: #121212; }
+    body { font-family: 'Montserrat', Arial, sans-serif; background: var(--page-bg); color: var(--text-color); }
+    body.light-theme { --header-bg-color: #f5f5f5; --footer-bg-color: #f5f5f5; --text-color: #000000; --highlight-text-color: #e30088; --card-bg: #f7d7eb; --muted: #555; --range-track: #cfcfcf; --range-thumb: #e30088; --page-bg: #ffffff; }
+    .header, footer { background-color: var(--header-bg-color); color: var(--text-color); }
+    footer { background-color: var(--footer-bg-color); }
+    .theme-toggle { position: absolute; top: 50%; right: 90px; transform: translateY(-50%); width: 45px; height: 45px; border-radius: 50%; border: none; background-color: var(--header-bg-color); color: var(--text-color); font-size: 1.3rem; cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
+    .main-content {  display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+    h1 { color: var(--highlight-text-color); font-size: 2.1em; margin-bottom: 0.75rem; text-align: center; }
+    .subtle { color: var(--muted); text-align: center; margin-bottom: 1.25rem; }
+    .top-controls { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: center; margin-bottom: 1rem; }
+    .sort-select { padding: 0.5rem 0.75rem; border-radius: 1rem; border: 1px solid var(--accent); background: #fff; color: var(--accent); outline: none; cursor: pointer; }
+    body:not(.light-theme) .sort-select { background: var(--card-bg); color: #fff; border-color: transparent; }
+    .global-controls button, .delete-selected-btn { padding: 0.55rem 1rem; border-radius: 1.25rem; border: none; cursor: pointer; background: var(--accent); color: #fff; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform .04s ease; }
+    .global-controls button:active, .delete-selected-btn:active { transform: translateY(1px); }
+    .global-controls { display: inline-flex; gap: 0.5rem; align-items: center; justify-content: center; }
+    #favourites-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
+    .favourite-card { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; grid-template-areas: "check title controls" "check seek  time"; gap: 0.5rem 0.75rem; align-items: center; background: var(--card-bg); border-radius: 1rem; padding: 0.8rem 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .delete-checkbox { grid-area: check; width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+    .favourite-title { grid-area: title; font-weight: 700; letter-spacing: 0.02em; align-self: center; }
+    .card-controls { grid-area: controls; display: inline-flex; gap: 0.4rem; justify-self: end; }
+    .card-controls button { border: none; border-radius: 999px; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: #fff; color: var(--accent); font-size: 1rem; cursor: pointer; transition: background .15s, color .15s, transform .04s ease; }
+    .card-controls button:hover { background: var(--accent); color: #fff; }
+    .card-controls button:active { transform: translateY(1px); }
+    .seek-wrap { grid-area: seek; display: flex; align-items: center; gap: 0.6rem; }
+    .seek { flex: 1; appearance: none; height: 6px; background: pink; border-radius: 6px; outline: none; cursor: pointer; }
+    .seek::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background:  black; border-radius: 50%; cursor: pointer; }
+    .seek::-moz-range-thumb { width: 14px; height: 14px; background: black; border: none; border-radius: 50%; cursor: pointer; }
+    .time { grid-area: time; justify-self: end; font-size: 0.85rem; color: #fff; opacity: 0.9; }
+    body.light-theme .time { color: #333; }
+    .no-songs { color: var(--muted); margin: 2rem 0; font-size: 1.05em; text-align: center; }
+    .audio-player { display: none; }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+      <h2>VibeScape</h2>
+    </div>
+    <nav class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="history.html">History</a>
+      <a href="playlist.html">Playlist</a>
+      <a href="favourites.html">Favourites</a>
+      <a href="comments.html">Comments</a>
+    </nav>
+    <button id="theme-toggle" class="theme-toggle">
+      <i class="fa-solid fa-sun"></i>
+    </button>
+    <div class="profile">
+      <img src="https://via.placeholder.com/40" alt="Profile" id="profile-img" />
+      <div class="dropdown" id="profile-dropdown">
+        <a href="settings.html">Settings</a>
+        <a href="index.html">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1>Your Favourite Songs</h1>
+    <p class="subtle">All your liked tracks in one place.</p>
+
+    <div class="top-controls">
+      <select class="sort-select" id="sort-select">
+        <option value="default">Sort: Default</option>
+        <option value="asc">A → Z</option>
+        <option value="desc">Z → A</option>
+      </select>
+
+      <div class="global-controls">
+        <button id="prev-btn" title="Previous"><i class="fa-solid fa-backward-step"></i></button>
+        <button id="toggle-btn" title="Play/Pause"><i class="fa-solid fa-play"></i></button>
+        <button id="next-btn" title="Next"><i class="fa-solid fa-forward-step"></i></button>
+      </div>
+
+      <button class="delete-selected-btn" id="delete-selected"><i class="fa-solid fa-trash"></i> Delete Selected</button>
+    </div>
+
+    <div id="favourites-list"></div>
+
+    <audio id="audio" class="audio-player"></audio>
+  </main>
+
+  <footer>
+    <a href="support.html">Support</a>
+    <a href="about.html">About</a>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </footer>
+
+  <!-- *** SCRIPT SECTION HAS BEEN COMPLETELY REPLACED *** -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        let allSongs = []; // This will hold the entire song library from the server
+        let sortMode = 'default';
+        let displayList = []; // The currently displayed (and possibly sorted) list of song titles
+        let playingTitle = null;
+        let isUserScrubbing = false;
+
+        const listEl = document.getElementById('favourites-list');
+        const audioEl = document.getElementById('audio');
+        const sortSelect = document.getElementById('sort-select');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const deleteBtn = document.getElementById('delete-selected');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        // --- FETCH THE MASTER SONG LIST FROM THE SERVER ---
+        async function loadSongsFromServer() {
+            try {
+                const response = await fetch('/api/songs');
+                if (!response.ok) throw new Error('Failed to fetch song library');
+                allSongs = await response.json();
+                console.log(`Successfully loaded ${allSongs.length} songs from the server.`);
+            } catch (error) {
+                console.error("Could not load song library:", error);
+                listEl.innerHTML = '<div class="no-songs error">Could not load song library from server.</div>';
+            }
+        }
+
+        // --- LOCALSTORAGE HELPERS ---
+        function getFavourites() { return JSON.parse(localStorage.getItem('favourites')) || []; }
+        function setFavourites(arr) { localStorage.setItem('favourites', JSON.stringify(arr)); }
+
+        // --- RENDER LOGIC ---
+        function buildAndRender() {
+            const favTitles = getFavourites();
+            
+            // Build the display list based on current sort mode
+            let baseList = [...favTitles];
+            if (sortMode === 'asc') baseList.sort((a, b) => a.localeCompare(b));
+            else if (sortMode === 'desc') baseList.sort((a, b) => b.localeCompare(a));
+            displayList = baseList;
+
+            if (displayList.length === 0) {
+                listEl.innerHTML = '<div class="no-songs">No favourites yet. Add some from the Home page!</div>';
+                return;
+            }
+
+            listEl.innerHTML = displayList.map(title => {
+                const isPlaying = playingTitle === title && !audioEl.paused && audioEl.src;
+                return `
+                    <div class="favourite-card" data-title="${title}">
+                        <input type="checkbox" class="delete-checkbox" data-title="${title}" />
+                        <div class="favourite-title">${title}</div>
+                        <div class="card-controls">
+                            <button class="back-10" title="Back 10s"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="toggle" title="Play/Pause">
+                                ${isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>'}
+                            </button>
+                            <button class="fwd-10" title="Forward 10s"><i class="fa-solid fa-rotate-right"></i></button>
+                        </div>
+                        <div class="seek-wrap">
+                            <input class="seek" type="range" min="0" max="100" value="0">
+                        </div>
+                        <div class="time"><span class="cur">0:00</span> / <span class="dur">0:00</span></div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateAllProgress();
+            updateGlobalToggleIcon();
+        }
+
+        // --- PLAYER CONTROLS ---
+        function playSongByTitle(title) {
+            const songData = allSongs.find(song => song.title === title);
+            if (!songData || !songData.file) {
+                alert(`Audio file for "${title}" not found in the library.`);
+                if(playingTitle === title) {
+                    audioEl.pause();
+                    playingTitle = null;
+                }
+                buildAndRender();
+                return;
+            }
+
+            if (playingTitle === title) { // If it's the current song, just toggle
+                audioEl.paused ? audioEl.play() : audioEl.pause();
+            } else { // Load and play a new song
+                playingTitle = title;
+                audioEl.src = songData.file;
+                audioEl.play();
+            }
+            buildAndRender();
+        }
+
+        function playNext() {
+            if (displayList.length === 0) return;
+            const currentIndex = displayList.findIndex(title => title === playingTitle);
+            const nextIndex = (currentIndex + 1) % displayList.length;
+            playSongByTitle(displayList[nextIndex]);
+        }
+
+        function playPrev() {
+            if (displayList.length === 0) return;
+            const currentIndex = displayList.findIndex(title => title === playingTitle);
+            const prevIndex = (currentIndex - 1 + displayList.length) % displayList.length;
+            playSongByTitle(displayList[prevIndex]);
+        }
+        
+        // --- EVENT HANDLERS ---
+        listEl.addEventListener('click', (e) => {
+            const card = e.target.closest('.favourite-card');
+            if (!card) return;
+            const title = card.dataset.title;
+
+            if (e.target.closest('.toggle')) playSongByTitle(title);
+            if (e.target.closest('.back-10')) seekRelative(-10, title);
+            if (e.target.closest('.fwd-10')) seekRelative(10, title);
+        });
+
+        listEl.addEventListener('input', (e) => {
+            if (e.target.classList.contains('seek')) {
+                const card = e.target.closest('.favourite-card');
+                if (card.dataset.title === playingTitle) {
+                    isUserScrubbing = true;
+                }
+            }
+        });
+
+        listEl.addEventListener('change', (e) => {
+            if (e.target.classList.contains('seek')) {
+                const card = e.target.closest('.favourite-card');
+                if (card.dataset.title === playingTitle) {
+                    isUserScrubbing = false;
+                    const pct = Number(e.target.value) / 100;
+                    if (isFinite(audioEl.duration)) {
+                        audioEl.currentTime = pct * audioEl.duration;
+                    }
+                }
+            }
+        });
+        
+        prevBtn.onclick = playPrev;
+        nextBtn.onclick = playNext;
+        toggleBtn.onclick = () => {
+            if (playingTitle) {
+                playSongByTitle(playingTitle); // Toggle current song
+            } else if (displayList.length > 0) {
+                playSongByTitle(displayList[0]); // Play first song in the list
+            }
+        };
+
+        deleteBtn.onclick = () => {
+            const checkedTitles = Array.from(listEl.querySelectorAll('.delete-checkbox:checked')).map(cb => cb.dataset.title);
+            if (checkedTitles.length === 0) {
+                alert('Select songs to delete.');
+                return;
+            }
+            if (checkedTitles.includes(playingTitle)) {
+                audioEl.pause();
+                audioEl.removeAttribute('src');
+                playingTitle = null;
+            }
+            let favs = getFavourites();
+            favs = favs.filter(title => !checkedTitles.includes(title));
+            setFavourites(favs);
+            buildAndRender();
+        };
+
+        // --- PROGRESS & TIME UPDATES ---
+        function updateAllProgress() {
+            listEl.querySelectorAll('.favourite-card').forEach(card => {
+                const title = card.dataset.title;
+                const seekEl = card.querySelector('.seek');
+                const curEl = card.querySelector('.time .cur');
+                const durEl = card.querySelector('.time .dur');
+                
+                if (title === playingTitle && isFinite(audioEl.duration)) {
+                    durEl.textContent = fmt(audioEl.duration);
+                    if (!isUserScrubbing) {
+                        const pct = (audioEl.currentTime / audioEl.duration) * 100;
+                        seekEl.value = isFinite(pct) ? pct : 0;
+                        curEl.textContent = fmt(audioEl.currentTime);
+                    }
+                } else {
+                    seekEl.value = 0;
+                    curEl.textContent = '0:00';
+                    durEl.textContent = '0:00';
+                }
+            });
+        }
+        
+        function updateGlobalToggleIcon() {
+            toggleBtn.innerHTML = audioEl.paused || !audioEl.src ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+        }
+
+        function seekRelative(delta, title) {
+            if (playingTitle !== title) {
+                playSongByTitle(title);
+            } else {
+                audioEl.currentTime = Math.max(0, Math.min(audioEl.currentTime + delta, audioEl.duration));
+            }
+        }
+        
+        function fmt(sec) {
+            if (!isFinite(sec) || sec < 0) sec = 0;
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        audioEl.addEventListener('timeupdate', updateAllProgress);
+        audioEl.addEventListener('loadedmetadata', updateAllProgress);
+        audioEl.addEventListener('play', buildAndRender);
+        audioEl.addEventListener('pause', buildAndRender);
+        audioEl.addEventListener('ended', playNext);
+        
+        sortSelect.addEventListener('change', () => {
+            sortMode = sortSelect.value;
+            buildAndRender();
+        });
+
+        // --- THEME & PROFILE (UNCHANGED) ---
+        themeToggleBtn.onclick = () => {
+            document.body.classList.toggle('light-theme');
+            const icon = themeToggleBtn.querySelector('i');
+            icon.classList.toggle('fa-sun');
+            icon.classList.toggle('fa-moon');
+        };
+        const profileImg = document.getElementById("profile-img");
+        const profileDropdown = document.getElementById("profile-dropdown");
+        profileImg.addEventListener("click", (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle("show");
+        });
+        document.addEventListener("click", () => {
+            profileDropdown.classList.remove("show");
+        });
+
+        // --- INITIALIZATION ---
+        await loadSongsFromServer(); // Load the master list first
+        buildAndRender(); // Then render the page
+    });
+  </script>
+</body>
+</html>

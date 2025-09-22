@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VibeScape</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- External fonts for better typography -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+
+</head>
+<body>
+
+
+<!-- Header / Navbar -->
+<header class="header">
+  <div class="logo">
+    <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+    <h2>VibeScape</h2>
+    
+  </div>
+  <nav class="nav-links">
+    <a href="#">Home</a>
+    <a href="history.html">History</a>
+    <a href="playlist.html">Playlist</a>
+    <a href="favourites.html">Favourites</a>
+    <a href="comments.html">Comments</a>
+  </nav>
+  <button id="theme-toggle" class="theme-toggle">
+    <i class="fa-solid fa-sun"></i>
+  </button>
+  <div class="profile">
+    <img src="https://via.placeholder.com/40" alt="Profile" id="profile-img" />
+    <div class="dropdown" id="profile-dropdown">
+      <a href="settings.html">Settings</a>
+      <a href="index.html">Logout</a>
+    </div>
+  </div>
+</header>
+
+<!-- Search Bar -->
+<section class="search-section">
+  <div class="search-box">
+    <input type="text" placeholder="Search for songs, artists, albums..." />
+    <button>Search</button>
+  </div>
+  
+</section>
+
+<!-- Banner -->
+<section class="banner">
+  <h2>New Releases & Trending Playlists</h2>
+  <p>Discover the latest hits and your favorite playlists!</p>
+</section>
+
+<!-- Genres -->
+<section class="section genres">
+  <h3>Popular Genres</h3>
+  <div class="horizontal-scroll">
+    <div class="genre-card" data-genre="Pop">
+      <img src="/pics/pop.png" alt="Pop">
+      <div class="genre-name">Pop</div>
+    </div>
+    <div class="genre-card" data-genre="Rock">
+      <img src="/pics/rock.png" alt="Rock">
+      <div class="genre-name">Rock</div>
+    </div>
+    <div class="genre-card" data-genre="Hip-Hop">
+        <img src="/pics/hiphop.png" alt="Hip-Hop">
+        <div class="genre-name">Hip-Hop</div>
+    </div>
+    <div class="genre-card" data-genre="Jazz">
+        <img src="/pics/jazz.png" alt="Jazz">
+        <div class="genre-name">Jazz</div>
+    </div>
+    <div class="genre-card" data-genre="Classical">
+        <img src="/pics/classical.png" alt="Classical">
+        <div class="genre-name">Classical</div>
+    </div>
+    <div class="genre-card" data-genre="Electric">
+        <img src="/pics/electric.png" alt="Electric">
+        <div class="genre-name">Electric</div>
+    </div>
+    <div class="genre-card" data-genre="Bass">
+        <img src="/pics/bass.png" alt="Bass">
+        <div class="genre-name">Bass</div>
+    </div>
+    <div class="genre-card" data-genre="K-Pop">
+        <img src="/pics/kpop.png" alt="K-Pop">
+        <div class="genre-name">K-Pop</div>
+    </div>
+    <div class="genre-card" data-genre="Metal">
+        <img src="/pics/metal.png" alt="Metal">
+        <div class="genre-name">Metal</div>
+    </div>
+    <div class="genre-card" data-genre="Disco">
+        <img src="/pics/disco.png" alt="Disco">
+        <div class="genre-name">Disco</div>
+    </div>
+    <div class="genre-card" data-genre="Melody">
+        <img src="/pics/melody.png" alt="Melody">
+        <div class="genre-name">Melody</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Genre Specific Songs -->
+<section id="genre-songs" class="section genre-songs" style="display:none;">
+  <h3 id="genre-title"></h3>
+  <div class="horizontal-scroll" id="genre-song-list">
+    <!-- Songs will be injected here by JavaScript -->
+  </div>
+</section>
+<!-- *** NEW: Popular Artists Section *** -->
+<section class="section artists">
+    <h3>Popular Artists</h3>
+    <div class="horizontal-scroll" id="artist-list">
+        <!-- Artists will be injected here by JavaScript -->
+    </div>
+</section>
+
+<!-- *** NEW: Artist Specific Songs Section *** -->
+<section id="artist-songs" class="section artist-songs" style="display:none;">
+    <h3 id="artist-title"></h3>
+    <div class="horizontal-scroll" id="artist-song-list">
+        <!-- Songs by the selected artist will be injected here -->
+    </div>
+</section>
+
+<!-- Recently Played -->
+<section class="section recently">
+  <h3>Recently Played</h3>
+  <div class="horizontal-scroll" id="recently-played-list">
+    <!-- Recently played songs will be populated here -->
+  </div>
+</section>
+
+
+<!-- Recommendations -->
+<section class="section recommendations">
+  <h3>Recommended for You</h3>
+  <div class="horizontal-scroll">
+    <div class="playlist-card">Chill Vibes</div>
+    <div class="playlist-card">Workout</div>
+    <div class="playlist-card">Top Hits</div>
+  </div>
+</section>
+
+<!-- Mini Player -->
+<div class="mini-player" id="mini-player">
+  <img src="https://via.placeholder.com/60" class="album-art" alt="Album Art" />
+  <!-- UPDATED: Structure for song and artist -->
+  <div class="song-info">
+    <div id="current-song-title">Song Title</div>
+    <div id="current-song-artist">Artist Name</div>
+  </div>
+  <div class="controls">
+    <button id="prev"><span>&laquo;</span></button>
+    <button id="play-pause"><span>&#9654;</span></button>
+    <button id="next"><span>&raquo;</span></button>
+  </div>
+</div>
+
+<!-- Full Screen Player -->
+<div id="full-player" class="full-player" style="display:none;">
+    <div class="player-content">
+        <img id="full-player-art" src="https://via.placeholder.com/300" alt="Album Art">
+        <h2 id="full-player-title">Song Title</h2>
+        <!-- NEW: Artist name in full player -->
+        <p id="full-player-artist">Artist Name</p>
+        <input type="range" id="seek-bar" value="0" style="width: 100%;">
+        <div class="player-timers">
+            <span id="current-time">0:00</span>
+            <span id="total-duration">0:00</span>
+        </div>
+        <div class="full-player-controls">
+            <button id="full-rewind" class="skip-btn"><span>-10s</span></button>
+            <button id="full-prev"><span>&laquo;</span></button>
+            <button id="full-play-pause"><span>&#9654;</span></button>
+            <button id="full-next"><span>&raquo;</span></button>
+            <button id="full-forward" class="skip-btn"><span>+10s</span></button>
+        </div>
+        <button id="minimize-player">Minimize</button>
+    </div>
+</div>
+
+<!-- Emotion Detection -->
+<section class="emotion-section">
+  <h3>Personalize with Your Mood</h3>
+  <button id="start-detection">Start Emotion Detection</button>
+  <button id="stop-detection" style="display:none;">Stop Camera</button>
+  
+  <div id="webcam-container" style="display:none;">
+    <video id="webcam" autoplay muted></video>
+    <p>Detected Emotion: <span id="emotion-label">N/A</span></p>
+  </div>
+</section>
+
+
+<!-- Footer -->
+<footer>
+  <a href="support.html">Support</a>
+  <a href="about.html">About</a>
+  <a href="terms.html">Terms of Service</a>
+  <a href="privacy.html">Privacy Policy</a>
+</footer>
+
+<!-- Main JS -->
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeScape - Welcome</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <button id="theme-toggle" class="theme-toggle">
+        <i class="fa-solid fa-sun"></i>
+    </button>
+
+    <main class="main-content">
+        <div class="login-container">
+            <div class="logo-header">
+                <!--div class="sound-bars">
+                    <span></span><span></span><span></span><span></span>
+                </!--div-->
+                <img src="vibescapelogo.jpg" alt="VibeScape Logo" class="logo-image" />
+                <h1>VibeScape</h1>
+            </div>
+
+            <form id="login-form">
+                <h2>Login to Your Account</h2>
+                
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@gmail.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <i class="fa-solid fa-eye" id="password-toggle"></i>
+                    </div>
+                </div>
+
+                <div class="options">
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="button" class="btn btn-secondary">Login as Guest</button>
+
+                <p class="signup-link">
+                    Don’t have an account? <a href="signup.html">Sign up here</a>
+                </p>
+            </form>
+        </div>
+    </main>
+
+    <footer id="about-us" class="about-section">
+        <h2>About VibeScape</h2>
+        <p>VibeScape is your personal gateway to a world of sound. We believe that music is more than just a background noise; it's an experience. Our mission is to provide a seamless, beautiful, and intuitive platform for you to discover new artists, create perfect playlists, and lose yourself in the music. Built with passion by music lovers, for music lovers. Welcome to the future of listening.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

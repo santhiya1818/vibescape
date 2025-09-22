@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playlists | VibeScape</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Your existing CSS is perfect, no changes are needed here */
+    :root { --header-bg-color: #222; --footer-bg-color: #222; --text-color: #f1e6e6; }
+    body.light-theme { --header-bg-color: #f5f5f5; --footer-bg-color: #f5f5f5; --text-color: #000000; --header-text-color: #000; --footer-text-color: #000; }
+    .header, footer { background-color: var(--header-bg-color); color: var(--text-color); }
+    footer { background-color: var(--footer-bg-color); color: var(--text-color); }
+    .playlist-btns { margin: 2rem 0 1rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .playlist-btn { padding: 0.6rem 1.5rem; font-size: 1rem; border-radius: 2rem; border: 1px solid #e30088; background: #fff; color: #e30088; cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .playlist-btn.active, .playlist-btn:hover { background: #e30088; color: #fff; }
+    .delete-playlist-btn { color: #e30088; background: none; border: none; font-size: 1.1rem; margin-left: 0.5rem; cursor: pointer; }
+    .delete-playlist-btn:hover { color: #a0005a; }
+    .playlist-songs { margin-top: 1rem; }
+    .song-card { display: flex; align-items: center; margin: 0.5rem auto; background: #dd0580; border-radius: 1rem; padding: 0.6rem 1.2rem; max-width: 400px; box-shadow: 0 2px 8px rgba(227,0,136,0.06); }
+    .delete-checkbox { margin-right: 1rem; accent-color: #e30088; }
+    .delete-confirm-btn { margin-top: 1rem; background: #e30088; color: #fff; border: none; border-radius: 1.5rem; padding: 0.5rem 1.5rem; font-size: 1rem; cursor: pointer; }
+    .controls { margin-top: 1rem; display: flex; gap: 1rem; align-items: center; }
+    .sort-select { margin-top: 1rem; background: #e30088;display: flex;color: #fff; align-items: center; margin: 0.5rem auto; background: #dd0580; border-radius: 1rem; padding: 0.6rem 1.2rem; max-width: 400px; box-shadow: 0 2px 8px rgba(235, 230, 235, 0.926); }
+    .playing-title { font-weight: bold; color: #fff; }
+    .main-content { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem;}
+    .progress-container { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; width: 80%; max-width: 500px; }
+    .progress-container input[type="range"] { flex: 1; appearance: none; height: 5px; background: #ddd; border-radius: 5px; }
+    .progress-container input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: #e30088; border-radius: 50%; cursor: pointer; }
+    .progress-time { font-size: 0.9rem; color: #e109ab; min-width: 40px; text-align: center; }
+    .theme-toggle { position: absolute; top: 50%; right: 90px; transform: translateY(-50%); width: 45px; height: 45px; border-radius: 50%; border: none; background-color: var(--header-bg-color); color: var(--text-color); font-size: 1.3rem; cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
+    .profile { position: relative; display: inline-block; }
+    .dropdown { display: none; position: absolute; top: 45px; right: 0; background: rgb(0, 0, 0); border: 1px solid #000000; border-radius: 5px; min-width: 150px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 999; }
+    .dropdown a { display: block; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; }
+    .dropdown a:hover { background: #e005a2; }
+    .dropdown.show { display: block; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+      <h2>VibeScape</h2>
+    </div>
+    <nav class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="history.html">History</a>
+      <a href="playlist.html">Playlist</a>
+      <a href="favourites.html">Favourites</a>
+      <a href="comments.html">Comments</a>
+    </nav>
+    <button id="theme-toggle" class="theme-toggle"><i class="fa-solid fa-sun"></i></button>
+    <div class="profile" id="profile-menu">
+      <img src="https://via.placeholder.com/40" alt="Profile" id="profile-img" />
+      <div class="dropdown" id="profile-dropdown">
+        <a href="settings.html">Settings</a>
+        <a href="index.html">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1>Your Playlists</h1>
+    <div class="playlist-btns" id="playlist-btns"></div>
+
+    <select class="sort-select" id="sort-select">
+      <option value="default">Sort: Default</option>
+      <option value="asc">A → Z</option>
+      <option value="desc">Z → A</option>
+    </select>
+
+    <div class="playlist-songs" id="playlist-songs"></div>
+
+    <div class="controls">
+      <button id="prev-song"><i class="fa-solid fa-backward"></i></button>
+      <button id="toggle-play"><i class="fa-solid fa-play"></i></button>
+      <button id="next-song"><i class="fa-solid fa-forward"></i></button>
+    </div>
+
+    <div class="progress-container">
+      <span class="progress-time" id="current-time">0:00</span>
+      <input type="range" id="progress-bar" value="0" min="0" max="100">
+      <span class="progress-time" id="total-time">0:00</span>
+    </div>
+
+    <button class="delete-confirm-btn" id="delete-confirm-btn">Delete Selected</button>
+  </main>
+
+  <footer>
+     <a href="support.html">Support</a>
+     <a href="about.html">About</a>
+     <a href="terms.html">Terms of Service</a>
+     <a href="privacy.html">Privacy Policy</a>
+  </footer>
+
+  <audio id="audio-player" src=""></audio>
+
+  <!-- *** SCRIPT SECTION HAS BEEN COMPLETELY REPLACED *** -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        let allSongs = []; // This will hold the entire song library from the server
+        let playlists = JSON.parse(localStorage.getItem('playlists')) || {};
+        let currentPlaylist = null;
+        let currentPlaylistSongs = []; // The currently displayed (and possibly sorted) list
+        let playingIndex = null;
+
+        const playlistBtns = document.getElementById('playlist-btns');
+        const playlistSongsDiv = document.getElementById('playlist-songs');
+        const deleteBtn = document.getElementById('delete-confirm-btn');
+        const audioPlayer = document.getElementById('audio-player');
+        const sortSelect = document.getElementById('sort-select');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const togglePlayBtn = document.getElementById('toggle-play');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        // Fetch the complete song library from the server
+        async function loadSongsFromServer() {
+            try {
+                const response = await fetch('/api/songs');
+                if (!response.ok) throw new Error('Failed to fetch song library');
+                allSongs = await response.json();
+                console.log(`Successfully loaded ${allSongs.length} songs from the server.`);
+            } catch (error) {
+                console.error("Could not load song library:", error);
+                playlistSongsDiv.innerHTML = '<div class="error">Could not load song library from server.</div>';
+            }
+        }
+
+        function renderPlaylistButtons() {
+            playlistBtns.innerHTML = '';
+            const names = Object.keys(playlists);
+            if (names.length === 0) {
+                playlistBtns.innerHTML = '<p>No playlists yet. Add songs to playlists from the Home page.</p>';
+                playlistSongsDiv.innerHTML = '';
+                currentPlaylist = null;
+                return;
+            }
+
+            // Set a default playlist if none is selected
+            if (!currentPlaylist && names.length > 0) {
+                currentPlaylist = names[0];
+            }
+
+            names.forEach(name => {
+                const wrapper = document.createElement('div');
+                const btn = document.createElement('button');
+                btn.className = 'playlist-btn' + (name === currentPlaylist ? ' active' : '');
+                btn.textContent = name;
+                btn.onclick = () => {
+                    currentPlaylist = name;
+                    playingIndex = null;
+                    audioPlayer.pause();
+                    audioPlayer.src = '';
+                    updateToggleIcon();
+                    renderPlaylistButtons();
+                    renderPlaylistSongs();
+                };
+                wrapper.appendChild(btn);
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-playlist-btn';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure you want to delete the playlist "${name}"?`)) {
+                        delete playlists[name];
+                        localStorage.setItem('playlists', JSON.stringify(playlists));
+                        if (currentPlaylist === name) currentPlaylist = null;
+                        renderPlaylistButtons();
+                        renderPlaylistSongs();
+                    }
+                };
+                wrapper.appendChild(delBtn);
+                playlistBtns.appendChild(wrapper);
+            });
+        }
+
+        function renderPlaylistSongs() {
+            playlistSongsDiv.innerHTML = '';
+            if (!currentPlaylist || !playlists[currentPlaylist] || playlists[currentPlaylist].length === 0) {
+                playlistSongsDiv.innerHTML = '<div class="no-songs">This playlist is empty.</div>';
+                deleteBtn.style.display = 'none';
+                currentPlaylistSongs = [];
+                return;
+            }
+
+            let songTitles = [...playlists[currentPlaylist]];
+            if (sortSelect.value === 'asc') songTitles.sort((a, b) => a.localeCompare(b));
+            if (sortSelect.value === 'desc') songTitles.sort((a, b) => b.localeCompare(a));
+            
+            currentPlaylistSongs = songTitles; // Update the currently displayed song list
+
+            songTitles.forEach((songTitle, idx) => {
+                const card = document.createElement('div');
+                card.className = 'song-card';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'delete-checkbox';
+                checkbox.dataset.songTitle = songTitle; // Use title for deletion
+                card.appendChild(checkbox);
+
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = songTitle;
+                titleSpan.style.flex = "1";
+                if (playingIndex === idx && !audioPlayer.paused) {
+                    titleSpan.classList.add("playing-title");
+                }
+                titleSpan.onclick = () => playSong(idx);
+                card.appendChild(titleSpan);
+
+                playlistSongsDiv.appendChild(card);
+            });
+            deleteBtn.style.display = 'inline-block';
+        }
+
+        function playSong(index) {
+            if (index < 0 || index >= currentPlaylistSongs.length) return;
+
+            const songTitle = currentPlaylistSongs[index];
+            const songData = allSongs.find(song => song.title === songTitle);
+
+            if (songData && songData.file) {
+                if (playingIndex !== index) {
+                    audioPlayer.src = songData.file;
+                    audioPlayer.currentTime = 0;
+                }
+                audioPlayer.play();
+                playingIndex = index;
+                updateToggleIcon();
+                renderPlaylistSongs(); // Re-render to highlight the playing song
+            } else {
+                alert('Audio file not found for: ' + songTitle);
+            }
+        }
+        
+        function togglePlayPause() {
+            if (!currentPlaylist || currentPlaylistSongs.length === 0) return;
+            if (audioPlayer.paused) {
+                if (playingIndex === null) {
+                    playSong(0); // Play the first song
+                } else {
+                    audioPlayer.play();
+                }
+            } else {
+                audioPlayer.pause();
+            }
+            updateToggleIcon();
+        }
+
+        function updateToggleIcon() {
+            togglePlayBtn.innerHTML = audioPlayer.paused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+        }
+        
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (!isNaN(audioPlayer.duration)) {
+                progressBar.value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+                totalTimeEl.textContent = formatTime(audioPlayer.duration);
+            }
+        });
+
+        progressBar.addEventListener('input', () => {
+            if (!isNaN(audioPlayer.duration)) {
+                audioPlayer.currentTime = (progressBar.value / 100) * audioPlayer.duration;
+            }
+        });
+        
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        document.getElementById('next-song').onclick = () => {
+            if (playingIndex !== null) {
+                playSong((playingIndex + 1) % currentPlaylistSongs.length);
+            }
+        };
+
+        document.getElementById('prev-song').onclick = () => {
+            if (playingIndex !== null) {
+                playSong((playingIndex - 1 + currentPlaylistSongs.length) % currentPlaylistSongs.length);
+            }
+        };
+
+        audioPlayer.addEventListener('ended', () => document.getElementById('next-song').click());
+        togglePlayBtn.onclick = togglePlayPause;
+        
+        deleteBtn.onclick = function() {
+            const toDeleteTitles = [];
+            playlistSongsDiv.querySelectorAll('.delete-checkbox:checked').forEach(cb => {
+                toDeleteTitles.push(cb.dataset.songTitle);
+            });
+            if (toDeleteTitles.length === 0) {
+                alert("Please select songs to delete.");
+                return;
+            }
+            // Filter out the songs to be deleted
+            playlists[currentPlaylist] = playlists[currentPlaylist].filter(song => !toDeleteTitles.includes(song));
+            localStorage.setItem('playlists', JSON.stringify(playlists));
+            playingIndex = null; // Reset player
+            audioPlayer.pause();
+            audioPlayer.src = '';
+            renderPlaylistSongs();
+            renderPlaylistButtons();
+        };
+
+        sortSelect.onchange = renderPlaylistSongs;
+
+        // Theme toggle
+        themeToggleBtn.onclick = () => {
+            document.body.classList.toggle('light-theme');
+            const icon = themeToggleBtn.querySelector('i');
+            icon.classList.toggle('fa-sun');
+            icon.classList.toggle('fa-moon');
+        };
+
+        // Profile Dropdown
+        const profileImg = document.getElementById("profile-img");
+        const profileDropdown = document.getElementById("profile-dropdown");
+        profileImg.addEventListener("click", (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle("show");
+        });
+        document.addEventListener("click", () => {
+            profileDropdown.classList.remove("show");
+        });
+        
+        // --- INITIALIZATION ---
+        await loadSongsFromServer(); // First, load the song library
+        renderPlaylistButtons();      // Then, render the buttons
+        renderPlaylistSongs();        // Finally, render the songs for the default playlist
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - VibeScape</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+            <h2>VibeScape</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="home.html">Home</a>
+            <a href="history.html">History</a>
+            <a href="playlist.html">Playlist</a>
+            <a href="favourites.html">Favourites</a>
+            <a href="comments.html">Comments</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle">
+            <i class="fa-solid fa-sun"></i>
+        </button>
+        <div class="profile">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23cccccc'/%3E%3Ctext x='20' y='25' font-family='Arial, sans-serif' font-size='12' fill='%23999999' text-anchor='middle'%3E40x40%3C/text%3E%3C/svg%3E" alt="Profile" id="profile-img" />
+            <div class="dropdown" id="profile-dropdown">
+                <a href="settings.html">Settings</a>
+                <a href="#" id="logout-link">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="settings-container">
+        <!-- Tab Navigation -->
+        <nav class="settings-tabs">
+            <button class="tab-link active" data-tab="profile">
+                <i class="fas fa-user-circle"></i> Profile
+            </button>
+            <button class="tab-link" data-tab="playback">
+                <i class="fas fa-sliders-h"></i> Playback & Privacy
+            </button>
+            <button class="tab-link" data-tab="account">
+                <i class="fas fa-shield-alt"></i> Account
+            </button>
+        </nav>
+
+        <!-- Tab Content Panes -->
+        <div class="settings-content">
+            <!-- Profile Tab Pane -->
+            <div id="profile" class="tab-pane active">
+                <div class="profile-settings-layout">
+                    <div class="profile-pic-area">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23cccccc'/%3E%3Ctext x='75' y='85' font-family='Arial, sans-serif' font-size='16' fill='%23999999' text-anchor='middle'%3E150x150%3C/text%3E%3C/svg%3E" alt="Profile Preview" id="profile-pic-preview">
+                        <input type="file" id="profile-pic-upload" hidden accept="image/*">
+                        <div class="profile-pic-buttons">
+                            <button class="btn btn-primary" onclick="document.getElementById('profile-pic-upload').click();">Upload Photo</button>
+                            <button class="btn btn-secondary" id="remove-pic-btn">Remove</button>
+                        </div>
+                    </div>
+                    <form id="profile-form" class="profile-info-form">
+                        <div class="input-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-actions">
+                             <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Playback & Privacy Tab Pane -->
+            <div id="playback" class="tab-pane">
+                <div class="setting-item">
+                    <div>
+                        <label for="autoplay-toggle">Autoplay</label>
+                        <p>Automatically play similar songs when your music ends.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="autoplay-toggle"><span class="slider round"></span></label>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <label for="canvas-toggle">Show Canvas</label>
+                        <p>Display short, looping visuals on tracks that have them.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="canvas-toggle" checked><span class="slider round"></span></label>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <label for="public-playlists-toggle">Make My Playlists Public</label>
+                        <p>Allow other users to find and follow your playlists.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="public-playlists-toggle" checked><span class="slider round"></span></label>
+                </div>
+            </div>
+
+            <!-- Account Management Tab Pane -->
+            <div id="account" class="tab-pane">
+                <form id="password-form">
+                     <h3>Change Password</h3>
+                    <div class="input-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" placeholder="Enter current password">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" placeholder="Enter new password">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
+
+                <div class="danger-zone">
+                    <h3>Danger Zone</h3>
+                    <div class="danger-item">
+                        <div>
+                            <strong>Clear Listening History</strong>
+                            <p>This will permanently remove your listening history. This action cannot be undone.</p>
+                        </div>
+                        <button class="btn btn-danger" id="clear-history-btn">Clear History</button>
+                    </div>
+                    <div class="danger-item">
+                        <div>
+                            <strong>Delete Account</strong>
+                            <p>This will permanently delete your account, playlists, and all associated data.</p>
+                        </div>
+                        <button class="btn btn-danger" id="delete-account-btn">Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2 id="modal-title">Are you sure?</h2>
+            <p id="modal-text">This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                <button class="btn btn-danger" id="modal-confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

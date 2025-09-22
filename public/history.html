@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play History | VibeScape</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Your existing CSS is perfect and remains unchanged */
+    :root { --bg-color: #121212; --text-color: #fff; --card-bg: #222; --border-color: rgba(255,255,255,0.1); --accent: #b91d8f; --delete-color: #ff4d4d; }
+    body.light-theme { --bg-color: #f5f5f5; --text-color: #000; --card-bg: #fff; --border-color: rgba(0,0,0,0.1); --accent: #b91d8f; --delete-color: #cc0000; }
+    body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
+    header, footer { background-color: var(--card-bg); color: var(--text-color); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+    footer { justify-content: center; gap: 20px; }
+    /*.nav-links a, footer a { color: var(--text-color); text-decoration: none; }*/
+    main { max-width: 800px; margin: 2rem auto; padding: 1rem; background: var(--card-bg); border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+    h1 { text-align: center; margin-bottom: 1rem; color: var(--accent); }
+    .history-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border-color); }
+    .history-item:last-child { border-bottom: none; }
+    .song-title { flex: 1; font-weight: 500; }
+    audio { width: 200px; }
+    .delete-btn { background: none; border: none; color: var(--delete-color); font-size: 18px; cursor: pointer; }
+    .clear-history { display: block; margin: 10px auto; padding: 8px 14px; background: var(--accent); border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 600; }
+    .profile img { border-radius: 50%; cursor: pointer; }
+    .dropdown { display: none; position: absolute; right: 0; background-color: #333; min-width: 120px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 5px; }
+    .dropdown a { color: white; padding: 12px 16px; text-decoration: none; display: block; }
+    .dropdown a:hover { background-color: #555; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+      <h2>VibeScape</h2>
+    </div>
+    <nav class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="history.html" class="active">History</a>
+      <a href="playlist.html">Playlist</a>
+      <a href="favourites.html">Favourites</a>
+      <a href="comments.html">Comments</a>
+    </nav>
+    <button id="theme-toggle" class="theme-toggle">
+      <i class="fa-solid fa-sun"></i>
+    </button>
+    <div class="profile" id="profile">
+      <img src="https://via.placeholder.com/40" alt="Profile" id="profile-img" />
+      <div class="dropdown" id="profile-dropdown">
+        <a href="settings.html">Settings</a>
+        <a href="index.html">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Your Listening History</h1>
+    <div id="history-list"></div>
+    <button id="clear-history" class="clear-history" style="display:none;">Clear All History</button>
+  </main>
+
+  <footer>
+    <a href="support.html">Support</a>
+    <a href="about.html">About</a>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </footer>
+
+  <!-- *** SCRIPT SECTION HAS BEEN COMPLETELY REPLACED *** -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        let allSongs = []; // This will hold the entire song library from the server
+        let history = JSON.parse(localStorage.getItem('playHistory')) || [];
+
+        const historyList = document.getElementById('history-list');
+        const clearBtn = document.getElementById('clear-history');
+        const themeToggle = document.getElementById('theme-toggle');
+        const profileDiv = document.getElementById('profile');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        
+        // Fetch the master song library from the server
+        async function loadSongsFromServer() {
+            try {
+                const response = await fetch('/api/songs');
+                if (!response.ok) throw new Error('Failed to fetch song library');
+                allSongs = await response.json();
+                console.log(`Successfully loaded ${allSongs.length} songs from the server.`);
+            } catch (error) {
+                console.error("Could not load song library:", error);
+                historyList.innerHTML = '<p style="text-align:center; color: var(--delete-color);">Could not load song library from server.</p>';
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem('playHistory', JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align:center;">No songs played yet.</p>';
+                clearBtn.style.display = 'none';
+                return;
+            }
+
+            clearBtn.style.display = 'block';
+            
+            // Reverse the history to show the most recent songs first
+            [...history].reverse().forEach((songTitle, index) => {
+                const originalIndex = history.length - 1 - index; // Correct index in the original array
+                const songData = allSongs.find(s => s.title === songTitle);
+
+                const item = document.createElement('div');
+                item.className = 'history-item';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'song-title';
+                titleDiv.textContent = songTitle;
+
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                
+                // If we found the song in our library, use its file path
+                if (songData) {
+                    audio.src = songData.file;
+                } else {
+                    // As a fallback, disable the audio player if the song isn't in the library
+                    titleDiv.textContent += " (Removed from library)";
+                    titleDiv.style.opacity = "0.5";
+                    audio.removeAttribute('src');
+                    audio.style.display = 'none';
+                }
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                delBtn.onclick = () => {
+                    history.splice(originalIndex, 1);
+                    saveHistory();
+                    renderHistory();
+                };
+
+                item.appendChild(titleDiv);
+                item.appendChild(audio);
+                item.appendChild(delBtn);
+                historyList.appendChild(item);
+            });
+        }
+
+        clearBtn.onclick = () => {
+            if (confirm('Are you sure you want to clear your entire listening history?')) {
+                history = [];
+                saveHistory();
+                renderHistory();
+            }
+        };
+
+        // --- Standard UI Elements ---
+        themeToggle.onclick = () => {
+            document.body.classList.toggle('light-theme');
+            const icon = themeToggle.querySelector('i');
+            icon.classList.toggle('fa-sun');
+            icon.classList.toggle('fa-moon');
+        };
+
+        profileDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', () => {
+            profileDropdown.style.display = 'none';
+        });
+
+        // --- INITIALIZATION ---
+        await loadSongsFromServer(); // First, load the master song library
+        renderHistory();             // Then, render the history list
+    });
+  </script>
+</body>
+</html>

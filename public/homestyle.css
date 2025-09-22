@@ -1,0 +1,85 @@
+/* public/style.css */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #121212;
+  color: #fff;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background-color: #1f1f1f;
+  border-bottom: 1px solid #444;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.header-buttons button {
+  background: none;
+  border: none;
+  color: white;
+  margin-left: 15px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.content {
+  padding: 30px;
+  text-align: center;
+}
+
+.music-controls {
+  margin-top: 30px;
+}
+
+.music-controls button {
+  background-color: #292929;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.music-controls button:hover {
+  background-color: #444;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #1f1f1f;
+  font-size: 14px;
+  color: #aaa;
+}
+
+body.light-mode {
+  background-color: #f2f2f2;
+  color: #222;
+}
+
+body.light-mode .header,
+body.light-mode .footer {
+  background-color: #ddd;
+  color: #000;
+}
+
+body.light-mode .music-controls button {
+  background-color: #eee;
+  color: #000;
+}
+
+body.light-mode .music-controls button:hover {
+  background-color: #ccc;
+}

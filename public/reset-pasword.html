@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>VibeScape - Set New Password</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="vibescapelogo.jpg" type="image/jpg" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <button id="theme-toggle" class="theme-toggle"><i class="fa-solid fa-sun"></i></button>
+
+    <main class="main-content">
+        <div class="login-container">
+            <div class="logo-header">
+                <img src="vibescapelogo.jpg" alt="VibeScape Logo" class="logo-image" />
+                <h1>VibeScape</h1>
+            </div>
+
+            <form id="new-password-form">
+                <h2>Set a New Password</h2>
+                <div class="input-group">
+                    <label for="password">New Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" required>
+                        <i class="fa-solid fa-eye password-toggle" data-target="password"></i>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirm-password" name="confirm-password" required>
+                        <i class="fa-solid fa-eye password-toggle" data-target="confirm-password"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Password</button>
+            </form>
+            <div id="message" style="display:none; margin-top:1rem; text-align:center;"></div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

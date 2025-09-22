@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>VibeScape - Reset Password</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="icon" href="vibescapelogo.jpg" type="image/jpg" />
+</head>
+<body>
+    <button id="theme-toggle" class="theme-toggle">
+        <i class="fa-solid fa-sun"></i>
+    </button>
+
+    <main class="main-content">
+        <div class="login-container">
+            <div class="logo-header">
+                <div class="sound-bars">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+                <img src="vibescapelogo.jpg" alt="VibeScape Logo" class="logo-image" />
+                <h1>VibeScape</h1>
+            </div>
+
+            <form id="reset-form">
+                <h2>Reset Your Password</h2>
+                <p style="color: var(--subtext-color); margin-bottom: 1rem;">
+                    Enter your email address and we'll send you instructions to reset your password.
+                </p>
+                <div class="input-group">
+                    <label for="reset-email">Email</label>
+                    <input 
+                        type="email" 
+                        id="reset-email" 
+                        name="reset-email" 
+                        placeholder="you@example.com" 
+                        required
+                        >
+                </div>
+                <button type="submit" class="btn btn-primary">Send Reset Link</button>
+                <p class="signup-link" style="margin-top:1.5rem;">
+                    Remembered your password? <a href="index.html">Back to Login</a>
+                </p>
+            </form>
+            <div id="reset-message" style="display:none; margin-top:1rem; color:var(--primary-color);"></div>
+        </div>
+    </main>
+
+    <footer class="about-section">
+        <h2>About VibeScape</h2>
+        <p>VibeScape is your personal gateway to a world of sound. Built with passion by music lovers, for music lovers.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

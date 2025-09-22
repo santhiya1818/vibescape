@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comments | VibeScape</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="vibescapelogo.jpg" type="image/jpg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    body.light-theme {
+      background: white;
+      color: rgb(212, 7, 133);
+    }
+
+    body.light-theme header,
+    body.light-theme footer {
+      background: white;
+      color: rgb(217, 9, 130);
+      border-bottom: 1px solid #ccc;
+    }
+
+    /*body.light-theme .nav-links a {
+      color: rgb(236, 0, 185);
+    }*/
+
+    body.light-theme .comment-container {
+      background: white !important;
+      color: rgb(221, 6, 167) !important;
+      border: 1px solid #ccc;
+    }
+
+    body.light-theme .comment-item {
+      background: #f7f7f7 !important;
+      border: 1px solid #ccc;
+      color: rgb(225, 4, 148);
+    }
+
+    body.light-theme .dropdown {
+      background: white;
+      border: 1px solid #ccc;
+    }
+
+    body.light-theme .dropdown a {
+      color: black;
+    }
+
+    body.light-theme .dropdown a:hover {
+      background: #eee;
+    }
+
+    .profile {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 45px;
+      right: 0;
+      background: rgb(0, 0, 0);
+      border: 1px solid #000000;
+      border-radius: 5px;
+      min-width: 150px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      z-index: 999;
+    }
+
+    .dropdown a {
+      display: block;
+      padding: 10px;
+      color: rgb(255, 255, 255);
+      text-decoration: none;
+    }
+
+    .dropdown a:hover {
+      background: #e005a2;
+    }
+
+    .dropdown.show {
+      display: block;
+    }
+
+    .comment-container {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 1rem;
+      color: rgb(220, 17, 153);
+      background: var(--bg-color, #e90ada);
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-bottom: 2rem;
+    }
+    .comment-form input,
+    .comment-form textarea {
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .comment-form button {
+      background: #c30c80;
+      color: rgb(253, 250, 252);
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .comment-form button:hover {
+      background: #d80687;
+    }
+    .comment-list {
+      list-style: none;
+      padding: 0;
+    }
+    .comment-item {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+    }
+    .comment-header {
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+    }
+    .comment-text {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+    .delete-btn {
+      background: rgb(12, 10, 10);
+      border: none;
+      color: red;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+      <h2>VibeScape</h2>
+    </div>
+    <nav class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="history.html">History</a>
+      <a href="playlist.html">Playlist</a>
+      <a href="favourites.html">Favourites</a>
+      <a href="comments.html">Comments</a>
+    </nav>
+    <button id="theme-toggle" class="theme-toggle">
+      <i class="fa-solid fa-sun"></i>
+    </button>
+    <div class="profile">
+      <img src="https://via.placeholder.com/40" alt="Profile" id="profile-img" />
+      <div class="dropdown" id="profile-dropdown">
+        <a href="settings.html">Settings</a>
+        <a href="index.html">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="comment-container">
+      <h1>Comments</h1>
+      <p>Share your thoughts, feedback, and experiences about your favourite music.</p>
+
+      <form class="comment-form" id="commentForm">
+        <input type="text" id="username" placeholder="Your Name (Optional)" />
+        <textarea id="commentText" rows="4" placeholder="Write your comment..." required></textarea>
+        <button type="submit">Post Comment</button>
+      </form>
+
+      <ul class="comment-list" id="commentList"></ul>
+    </div>
+  </main>
+
+  <footer>
+    <a href="support.html">Support</a>
+    <a href="about.html">About</a>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </footer>
+
+  <script>
+    const profileImg = document.getElementById("profile-img");
+    const profileDropdown = document.getElementById("profile-dropdown");
+
+    profileImg.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle("show");
+    });
+
+    profileDropdown.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
+    document.addEventListener("click", () => {
+      profileDropdown.classList.remove("show");
+    });
+
+    const commentForm = document.getElementById("commentForm");
+    const commentList = document.getElementById("commentList");
+
+    function loadComments() {
+      const comments = JSON.parse(localStorage.getItem("comments")) || [];
+      commentList.innerHTML = "";
+      comments.forEach((comment, index) => {
+        const li = document.createElement("li");
+        li.className = "comment-item";
+        li.innerHTML = `
+          <div class="comment-header">
+            <span>${comment.username} • ${comment.date}</span>
+            <button class="delete-btn" onclick="deleteComment(${index})">Delete</button>
+          </div>
+          <p class="comment-text">${comment.text}</p>
+        `;
+        commentList.appendChild(li);
+      });
+    }
+
+    function saveComment(username, text) {
+      const comments = JSON.parse(localStorage.getItem("comments")) || [];
+      const date = new Date().toLocaleString();
+      comments.unshift({ username, text, date });
+      localStorage.setItem("comments", JSON.stringify(comments));
+      loadComments();
+    }
+
+    function deleteComment(index) {
+      const comments = JSON.parse(localStorage.getItem("comments")) || [];
+      comments.splice(index, 1);
+      localStorage.setItem("comments", JSON.stringify(comments));
+      loadComments();
+    }
+
+    commentForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim() || "Anonymous";
+      const text = document.getElementById("commentText").value.trim();
+      if (text) {
+        saveComment(username, text);
+        commentForm.reset();
+      }
+    });
+
+    // Theme toggle functionality
+    const themeToggle = document.getElementById("theme-toggle");
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light-theme");
+      themeToggle.innerHTML = document.body.classList.contains("light-theme")
+        ? '<i class="fa-solid fa-moon"></i>'
+        : '<i class="fa-solid fa-sun"></i>';
+    });
+
+    loadComments();
+  </script>
+</body>
+</html>
