@@ -182,6 +182,6 @@ app.post('/api/reset-password', async (req, res) => {
 });
 
 // --- START SERVER ---
-app.listen(port, () => {
-    console.log(`VibeScape server running on port ${port}!`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`VibeScape server running on http://0.0.0.0:${port} (accessible via your local IP address on the network)`);
 });
