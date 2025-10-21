@@ -36,6 +36,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         dropdown.addEventListener('click', e => e.stopPropagation());
     }
 
+    // === HELPER FUNCTION TO CREATE SONG CARDS ===
+    function createSongCard(song) {
+        const card = document.createElement('div');
+        card.className = 'song-card'; // Use a generic class for styling
+
+        const img = document.createElement('img');
+        img.src = song.art;
+        img.alt = song.title;
+
+        const title = document.createElement('div');
+        title.className = 'song-title';
+        title.textContent = song.title;
+        
+        const artist = document.createElement('div');
+        artist.className = 'song-artist';
+        artist.textContent = song.artist;
+
+        card.appendChild(img);
+        card.appendChild(title);
+        card.appendChild(artist);
+
+        // Add click listener to play the song
+        card.addEventListener('click', () => {
+            const songIndex = songs.findIndex(s => s.title === song.title);
+            if (songIndex !== -1) {
+                currentIndex = songIndex;
+                isEmotionMode = false;
+                loadSong(currentIndex);
+                playSong();
+            }
+        });
+
+        return card;
+    }
+
     // === PLAYLISTS & FAVOURITES HELPER FUNCTIONS ===
     function getPlaylists() {
         return JSON.parse(localStorage.getItem('playlists')) || {};
