@@ -216,37 +216,80 @@
     const commentForm = document.getElementById("commentForm");
     const commentList = document.getElementById("commentList");
 
-    function loadComments() {
-      const comments = JSON.parse(localStorage.getItem("comments")) || [];
-      commentList.innerHTML = "";
-      comments.forEach((comment, index) => {
-        const li = document.createElement("li");
-        li.className = "comment-item";
-        li.innerHTML = `
-          <div class="comment-header">
-            <span>${comment.username} • ${comment.date}</span>
-            <button class="delete-btn" onclick="deleteComment(${index})">Delete</button>
-          </div>
-          <p class="comment-text">${comment.text}</p>
-        `;
-        commentList.appendChild(li);
-      });
+    // Load comments from server
+    async function loadComments() {
+      try {
+        const response = await fetch('/api/comments');
+        const comments = await response.json();
+        
+        commentList.innerHTML = "";
+        comments.forEach((comment) => {
+          const li = document.createElement("li");
+          li.className = "comment-item";
+          const commentDate = new Date(comment.date).toLocaleString();
+          li.innerHTML = `
+            <div class="comment-header">
+              <span>${comment.username} • ${commentDate}</span>
+              <button class="delete-btn" onclick="deleteComment('${comment._id}')">Delete</button>
+            </div>
+            <p class="comment-text">${comment.text}</p>
+          `;
+          commentList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error loading comments:', error);
+        commentList.innerHTML = '<li class="comment-item"><p>Error loading comments. Please try again later.</p></li>';
+      }
     }
 
-    function saveComment(username, text) {
-      const comments = JSON.parse(localStorage.getItem("comments")) || [];
-      const date = new Date().toLocaleString();
-      comments.unshift({ username, text, date });
-      localStorage.setItem("comments", JSON.stringify(comments));
-      loadComments();
+    // Save comment to server
+    async function saveComment(username, text) {
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, text })
+        });
+        
+        if (response.ok) {
+          loadComments(); // Refresh comments list
+        } else {
+          const error = await response.json();
+          alert('Error saving comment: ' + error.error);
+        }
+      } catch (error) {
+        console.error('Error saving comment:', error);
+        alert('Error saving comment. Please try again.');
+      }
     }
 
-    function deleteComment(index) {
-      const comments = JSON.parse(localStorage.getItem("comments")) || [];
-      comments.splice(index, 1);
-      localStorage.setItem("comments", JSON.stringify(comments));
-      loadComments();
+    // Delete comment from server
+    async function deleteComment(commentId) {
+      if (!confirm('Are you sure you want to delete this comment?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/comments/${commentId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          loadComments(); // Refresh comments list
+        } else {
+          const error = await response.json();
+          alert('Error deleting comment: ' + error.error);
+        }
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Error deleting comment. Please try again.');
+      }
     }
+
+    // Make deleteComment function globally accessible for onclick events
+    window.deleteComment = deleteComment;
 
     commentForm.addEventListener("submit", (e) => {
       e.preventDefault();
