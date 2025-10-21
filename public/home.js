@@ -133,6 +133,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         stopBtn.onclick = stopCamera;
     }
 
+    // === SEARCH LOGIC ===
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+    const searchResultsSection = document.getElementById('search-results');
+    const searchResultsList = document.getElementById('search-results-list');
+
+    function performSearch() {
+        const query = searchInput.value.toLowerCase().trim();
+        if (!query) {
+            searchResultsSection.style.display = 'none';
+            return;
+        }
+
+        const results = songs.filter(song => 
+            song.title.toLowerCase().includes(query) ||
+            song.artist.toLowerCase().includes(query) ||
+            song.genre.toLowerCase().includes(query)
+        );
+
+        searchResultsList.innerHTML = ''; // Clear previous results
+
+        if (results.length > 0) {
+            results.forEach(song => {
+                const songCard = createSongCard(song);
+                searchResultsList.appendChild(songCard);
+            });
+            searchResultsSection.style.display = 'block';
+        } else {
+            searchResultsList.innerHTML = '<p>No results found.</p>';
+            searchResultsSection.style.display = 'block';
+        }
+    }
+
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            performSearch();
+        }
+    });
+
     // === CORE PLAYER FUNCTIONS ===
     function loadSong(index) {
         if (!songs || songs.length === 0) return;
