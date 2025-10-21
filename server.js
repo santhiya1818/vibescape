@@ -15,10 +15,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
-const dbURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vibescape';
+// IMPORTANT: Replace <YOUR_PASSWORD_HERE> with your actual MongoDB Atlas password
+const dbURI = process.env.MONGODB_URI || "mongodb+srv://vibescapeUser:santhiya1325@cluster0.dfq4mbe.mongodb.net/vibescape?retryWrites=true&w=majority";
 mongoose.connect(dbURI)
-    .then(() => console.log('✅ Connected to MongoDB'))
-    .catch(err => console.error('❌ Could not connect to MongoDB:', err));
+    .then(() => console.log('✅ Connected to MongoDB Atlas'))
+    .catch(err => console.error('❌ Could not connect to MongoDB Atlas:', err));
 
 // Mongoose Schemas
 const songSchema = new mongoose.Schema({
@@ -116,6 +117,7 @@ app.post('/api/register', async (req, res) => {
         await newUser.save();
         res.status(201).json({ message: 'Registration successful! You can now log in.' });
     } catch (error) {
+        console.error("Registration Error:", error);
         res.status(500).json({ error: 'Server error during registration.' });
     }
 });
