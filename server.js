@@ -6,10 +6,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3030;
+const port = 3030;
 
 // Middleware
 app.use(express.json()); 

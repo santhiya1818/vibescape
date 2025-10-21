@@ -216,33 +216,16 @@
     const commentForm = document.getElementById("commentForm");
     const commentList = document.getElementById("commentList");
 
-    // Enhanced localStorage with cross-tab synchronization
-    // This allows comments to sync between different browser tabs/windows
-    
     function loadComments() {
-      const comments = JSON.parse(localStorage.getItem("vibescape_comments")) || [];
-      displayComments(comments);
-    }
-
-    function displayComments(comments) {
+      const comments = JSON.parse(localStorage.getItem("comments")) || [];
       commentList.innerHTML = "";
-      
-      if (comments.length === 0) {
-        commentList.innerHTML = '<li class="comment-item"><p style="color: var(--subtext-color);">No comments yet. Be the first to comment!</p></li>';
-        return;
-      }
-      
-      // Sort by date (newest first)
-      comments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
       comments.forEach((comment, index) => {
         const li = document.createElement("li");
         li.className = "comment-item";
-        const commentDate = new Date(comment.timestamp).toLocaleString();
         li.innerHTML = `
           <div class="comment-header">
-            <span>${comment.username} • ${commentDate}</span>
-            <button class="delete-btn" onclick="deleteComment('${comment.id}')">Delete</button>
+            <span>${comment.username} • ${comment.date}</span>
+            <button class="delete-btn" onclick="deleteComment(${index})">Delete</button>
           </div>
           <p class="comment-text">${comment.text}</p>
         `;
@@ -251,66 +234,19 @@
     }
 
     function saveComment(username, text) {
-      const comments = JSON.parse(localStorage.getItem("vibescape_comments")) || [];
-      const newComment = {
-        id: Date.now() + Math.random().toString(36).substr(2, 9), // Unique ID
-        username: username.trim(),
-        text: text.trim(),
-        timestamp: new Date().toISOString(),
-        device: navigator.userAgent.substr(0, 50) // Device identifier
-      };
-      
-      comments.unshift(newComment);
-      
-      // Keep only last 50 comments to prevent storage bloat
-      if (comments.length > 50) {
-        comments.splice(50);
-      }
-      
-      localStorage.setItem("vibescape_comments", JSON.stringify(comments));
-      
-      // Trigger storage event for cross-tab sync
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'vibescape_comments',
-        newValue: JSON.stringify(comments),
-        url: window.location.href
-      }));
-      
+      const comments = JSON.parse(localStorage.getItem("comments")) || [];
+      const date = new Date().toLocaleString();
+      comments.unshift({ username, text, date });
+      localStorage.setItem("comments", JSON.stringify(comments));
       loadComments();
     }
 
-    function deleteComment(commentId) {
-      if (!confirm('Are you sure you want to delete this comment?')) {
-        return;
-      }
-      
-      const comments = JSON.parse(localStorage.getItem("vibescape_comments")) || [];
-      const updatedComments = comments.filter(comment => comment.id !== commentId);
-      
-      localStorage.setItem("vibescape_comments", JSON.stringify(updatedComments));
-      
-      // Trigger storage event for cross-tab sync
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'vibescape_comments',
-        newValue: JSON.stringify(updatedComments),
-        url: window.location.href
-      }));
-      
+    function deleteComment(index) {
+      const comments = JSON.parse(localStorage.getItem("comments")) || [];
+      comments.splice(index, 1);
+      localStorage.setItem("comments", JSON.stringify(comments));
       loadComments();
     }
-
-    // Listen for storage changes from other tabs/windows
-    window.addEventListener('storage', function(e) {
-      if (e.key === 'vibescape_comments') {
-        loadComments(); // Refresh when comments change in another tab
-      }
-    });
-
-    // Auto-refresh comments every 30 seconds to catch external changes
-    setInterval(loadComments, 30000);
-
-    // Make deleteComment function globally accessible
-    window.deleteComment = deleteComment;
 
     commentForm.addEventListener("submit", (e) => {
       e.preventDefault();
