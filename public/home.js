@@ -245,15 +245,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     function playSong() {
         if (!audio.src) return;
         audio.play().catch(error => console.error("Error playing audio:", error));
-        document.getElementById('play-pause').innerHTML = '<span>❚❚</span>';
-        document.getElementById('full-play-pause').innerHTML = '<span>❚❚</span>';
+        updatePlayButtonsState(true);
         document.getElementById('full-player').style.display = 'flex';
     }
 
     function pauseSong() {
         audio.pause();
-        document.getElementById('play-pause').innerHTML = '<span>&#9654;</span>';
-        document.getElementById('full-play-pause').innerHTML = '<span>&#9654;</span>';
+        updatePlayButtonsState(false);
+    }
+
+    function updatePlayButtonsState(isPlaying) {
+        const playIcon = isPlaying ? '<span>❚❚</span>' : '<span>&#9654;</span>';
+        document.getElementById('play-pause').innerHTML = playIcon;
+        document.getElementById('full-play-pause').innerHTML = playIcon;
     }
 
     function nextSong() {
@@ -271,17 +275,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // === EVENT LISTENERS FOR STATIC ELEMENTS ===
-    document.getElementById('play-pause').onclick = () => { isEmotionMode = false; audio.paused ? playSong() : pauseSong(); };
+    document.getElementById('play-pause').onclick = () => { 
+        isEmotionMode = false; 
+        audio.paused ? playSong() : pauseSong(); 
+    };
     document.getElementById('next').onclick = nextSong;
     document.getElementById('prev').onclick = prevSong;
-    document.getElementById('full-play-pause').onclick = () => { isEmotionMode = false; audio.paused ? playSong() : pauseSong(); };
+    document.getElementById('full-play-pause').onclick = () => { 
+        isEmotionMode = false; 
+        audio.paused ? playSong() : pauseSong(); 
+    };
     document.getElementById('full-next').onclick = nextSong;
     document.getElementById('full-prev').onclick = prevSong;
-    document.getElementById('full-rewind').onclick = () => audio.currentTime -= 10;
-    document.getElementById('full-forward').onclick = () => audio.currentTime += 10;
+    
+    // Improved rewind/forward with bounds checking
+    document.getElementById('full-rewind').onclick = () => {
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+    };
+    document.getElementById('full-forward').onclick = () => {
+        audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+    };
+    
     document.getElementById('minimize-player').addEventListener('click', () => {
         document.getElementById('full-player').style.display = 'none';
     });
+
+    // Add audio event listeners for better state management
+    audio.addEventListener('play', () => updatePlayButtonsState(true));
+    audio.addEventListener('pause', () => updatePlayButtonsState(false));
+    audio.addEventListener('ended', () => updatePlayButtonsState(false));
 
     const seekBar = document.getElementById('seek-bar');
     const currentTimeEl = document.getElementById('current-time');
@@ -301,6 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     seekBar.addEventListener('input', () => audio.currentTime = (seekBar.value / 100) * audio.duration);
 
     function handleSongEnd() {
+        updatePlayButtonsState(false); // Ensure buttons show play state
         if (isEmotionMode) {
             isEmotionMode = false;
             const continueDetection = confirm("Do you want to continue face detection?");
