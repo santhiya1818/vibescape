@@ -176,6 +176,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function performSearch() {
         const query = searchInput.value.toLowerCase().trim();
+        console.log('Search query:', query); // Debug log
+        console.log('Available songs:', songs); // Debug log
+        
         if (!query) {
             searchResultsSection.style.display = 'none';
             return;
@@ -187,6 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             song.genre.toLowerCase().includes(query)
         );
 
+        console.log('Search results:', results); // Debug log
         searchResultsList.innerHTML = ''; // Clear previous results
 
         if (results.length > 0) {
