@@ -244,20 +244,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function playSong() {
         if (!audio.src) return;
-        audio.play().catch(error => console.error("Error playing audio:", error));
-        updatePlayButtonsState(true);
-        document.getElementById('full-player').style.display = 'flex';
+        console.log('Playing song:', audio.src);
+        audio.play()
+            .then(() => {
+                console.log('Audio playback started successfully');
+                updatePlayButtonsState(true);
+                document.getElementById('full-player').style.display = 'flex';
+            })
+            .catch(error => {
+                console.error("Error playing audio:", error);
+                updatePlayButtonsState(false);
+            });
     }
 
     function pauseSong() {
+        console.log('Pausing song');
         audio.pause();
         updatePlayButtonsState(false);
     }
 
     function updatePlayButtonsState(isPlaying) {
         const playIcon = isPlaying ? '<span>❚❚</span>' : '<span>&#9654;</span>';
-        document.getElementById('play-pause').innerHTML = playIcon;
-        document.getElementById('full-play-pause').innerHTML = playIcon;
+        const playPauseBtn = document.getElementById('play-pause');
+        const fullPlayPauseBtn = document.getElementById('full-play-pause');
+        
+        if (playPauseBtn) playPauseBtn.innerHTML = playIcon;
+        if (fullPlayPauseBtn) fullPlayPauseBtn.innerHTML = playIcon;
+        
+        console.log('Button state updated:', isPlaying ? 'PAUSE' : 'PLAY');
+    }
+
+    function togglePlayPause() {
+        isEmotionMode = false;
+        console.log('Toggle play/pause - Current state:', audio.paused ? 'PAUSED' : 'PLAYING');
+        
+        if (audio.paused) {
+            playSong();
+        } else {
+            pauseSong();
+        }
     }
 
     function nextSong() {
@@ -275,35 +300,90 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // === EVENT LISTENERS FOR STATIC ELEMENTS ===
-    document.getElementById('play-pause').onclick = () => { 
-        isEmotionMode = false; 
-        audio.paused ? playSong() : pauseSong(); 
-    };
-    document.getElementById('next').onclick = nextSong;
-    document.getElementById('prev').onclick = prevSong;
-    document.getElementById('full-play-pause').onclick = () => { 
-        isEmotionMode = false; 
-        audio.paused ? playSong() : pauseSong(); 
-    };
-    document.getElementById('full-next').onclick = nextSong;
-    document.getElementById('full-prev').onclick = prevSong;
+    // Remove any existing event listeners to prevent conflicts
+    const playPauseBtn = document.getElementById('play-pause');
+    const fullPlayPauseBtn = document.getElementById('full-play-pause');
+    const nextBtn = document.getElementById('next');
+    const prevBtn = document.getElementById('prev');
+    const fullNextBtn = document.getElementById('full-next');
+    const fullPrevBtn = document.getElementById('full-prev');
+    const rewindBtn = document.getElementById('full-rewind');
+    const forwardBtn = document.getElementById('full-forward');
+    const minimizeBtn = document.getElementById('minimize-player');
+
+    // Clear any existing onclick handlers
+    if (playPauseBtn) playPauseBtn.onclick = null;
+    if (fullPlayPauseBtn) fullPlayPauseBtn.onclick = null;
+    if (nextBtn) nextBtn.onclick = null;
+    if (prevBtn) prevBtn.onclick = null;
+    if (fullNextBtn) fullNextBtn.onclick = null;
+    if (fullPrevBtn) fullPrevBtn.onclick = null;
+    if (rewindBtn) rewindBtn.onclick = null;
+    if (forwardBtn) forwardBtn.onclick = null;
+
+    // Add new event listeners
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', togglePlayPause);
+    }
+    if (fullPlayPauseBtn) {
+        fullPlayPauseBtn.addEventListener('click', togglePlayPause);
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', nextSong);
+    }
+    if (prevBtn) {
+        prevBtn.addEventListener('click', prevSong);
+    }
+    if (fullNextBtn) {
+        fullNextBtn.addEventListener('click', nextSong);
+    }
+    if (fullPrevBtn) {
+        fullPrevBtn.addEventListener('click', prevSong);
+    }
     
     // Improved rewind/forward with bounds checking
-    document.getElementById('full-rewind').onclick = () => {
-        audio.currentTime = Math.max(0, audio.currentTime - 10);
-    };
-    document.getElementById('full-forward').onclick = () => {
-        audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
-    };
+    if (rewindBtn) {
+        rewindBtn.addEventListener('click', () => {
+            console.log('Rewind 10 seconds');
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+        });
+    }
+    if (forwardBtn) {
+        forwardBtn.addEventListener('click', () => {
+            console.log('Forward 10 seconds');
+            audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+        });
+    }
     
-    document.getElementById('minimize-player').addEventListener('click', () => {
-        document.getElementById('full-player').style.display = 'none';
+    if (minimizeBtn) {
+        minimizeBtn.addEventListener('click', () => {
+            document.getElementById('full-player').style.display = 'none';
+        });
+    }
     });
 
     // Add audio event listeners for better state management
-    audio.addEventListener('play', () => updatePlayButtonsState(true));
-    audio.addEventListener('pause', () => updatePlayButtonsState(false));
-    audio.addEventListener('ended', () => updatePlayButtonsState(false));
+    audio.addEventListener('play', () => {
+        console.log('Audio play event fired');
+        updatePlayButtonsState(true);
+    });
+    audio.addEventListener('pause', () => {
+        console.log('Audio pause event fired');
+        updatePlayButtonsState(false);
+    });
+    audio.addEventListener('ended', () => {
+        console.log('Audio ended event fired');
+        updatePlayButtonsState(false);
+    });
+
+    // Additional audio events for debugging
+    audio.addEventListener('loadstart', () => console.log('Audio load started'));
+    audio.addEventListener('canplay', () => console.log('Audio can play'));
+    audio.addEventListener('waiting', () => console.log('Audio waiting/buffering'));
+    audio.addEventListener('error', (e) => {
+        console.error('Audio error:', e);
+        updatePlayButtonsState(false);
+    });
 
     const seekBar = document.getElementById('seek-bar');
     const currentTimeEl = document.getElementById('current-time');
