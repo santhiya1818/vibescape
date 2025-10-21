@@ -243,21 +243,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function playSong() {
-        if (!audio.src) return;
-        audio.play().catch(error => console.error("Error playing audio:", error));
-        updatePlayButtonsState(true);
-        document.getElementById('full-player').style.display = 'flex';
+        if (!audio.src) {
+            console.log('No audio source loaded');
+            return;
+        }
+        console.log('Attempting to play:', audio.src);
+        audio.play()
+            .then(() => {
+                console.log('Audio playing successfully');
+                updatePlayButtonsState(true);
+                document.getElementById('full-player').style.display = 'flex';
+            })
+            .catch(error => {
+                console.error("Error playing audio:", error);
+                updatePlayButtonsState(false);
+            });
     }
 
     function pauseSong() {
+        console.log('Pausing audio');
         audio.pause();
         updatePlayButtonsState(false);
     }
 
     function updatePlayButtonsState(isPlaying) {
         const playIcon = isPlaying ? '<span>❚❚</span>' : '<span>&#9654;</span>';
-        document.getElementById('play-pause').innerHTML = playIcon;
-        document.getElementById('full-play-pause').innerHTML = playIcon;
+        const playPauseBtn = document.getElementById('play-pause');
+        const fullPlayPauseBtn = document.getElementById('full-play-pause');
+        
+        if (playPauseBtn) {
+            playPauseBtn.innerHTML = playIcon;
+        } else {
+            console.error('play-pause button not found');
+        }
+        
+        if (fullPlayPauseBtn) {
+            fullPlayPauseBtn.innerHTML = playIcon;
+        } else {
+            console.error('full-play-pause button not found');
+        }
+        
+        console.log('Button state updated:', isPlaying ? 'PLAYING' : 'PAUSED');
     }
 
     function nextSong() {
@@ -275,18 +301,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // === EVENT LISTENERS FOR STATIC ELEMENTS ===
-    document.getElementById('play-pause').onclick = () => { 
-        isEmotionMode = false; 
-        audio.paused ? playSong() : pauseSong(); 
-    };
-    document.getElementById('next').onclick = nextSong;
-    document.getElementById('prev').onclick = prevSong;
-    document.getElementById('full-play-pause').onclick = () => { 
-        isEmotionMode = false; 
-        audio.paused ? playSong() : pauseSong(); 
-    };
-    document.getElementById('full-next').onclick = nextSong;
-    document.getElementById('full-prev').onclick = prevSong;
+    console.log('Setting up event listeners...');
+    
+    const playPauseBtn = document.getElementById('play-pause');
+    const fullPlayPauseBtn = document.getElementById('full-play-pause');
+    const nextBtn = document.getElementById('next');
+    const prevBtn = document.getElementById('prev');
+    const fullNextBtn = document.getElementById('full-next');
+    const fullPrevBtn = document.getElementById('full-prev');
+    
+    if (playPauseBtn) {
+        playPauseBtn.onclick = () => { 
+            console.log('Mini play/pause clicked');
+            isEmotionMode = false; 
+            audio.paused ? playSong() : pauseSong(); 
+        };
+        console.log('Mini play/pause listener added');
+    } else {
+        console.error('play-pause button not found!');
+    }
+    
+    if (nextBtn) {
+        nextBtn.onclick = nextSong;
+        console.log('Next button listener added');
+    } else {
+        console.error('next button not found!');
+    }
+    
+    if (prevBtn) {
+        prevBtn.onclick = prevSong;
+        console.log('Prev button listener added');
+    } else {
+        console.error('prev button not found!');
+    }
+    
+    if (fullPlayPauseBtn) {
+        fullPlayPauseBtn.onclick = () => { 
+            console.log('Full play/pause clicked');
+            isEmotionMode = false; 
+            audio.paused ? playSong() : pauseSong(); 
+        };
+        console.log('Full play/pause listener added');
+    } else {
+        console.error('full-play-pause button not found!');
+    }
+    
+    if (fullNextBtn) {
+        fullNextBtn.onclick = nextSong;
+        console.log('Full next button listener added');
+    } else {
+        console.error('full-next button not found!');
+    }
+    
+    if (fullPrevBtn) {
+        fullPrevBtn.onclick = prevSong;
+        console.log('Full prev button listener added');
+    } else {
+        console.error('full-prev button not found!');
+    }
     
     // Improved rewind/forward with bounds checking
     document.getElementById('full-rewind').onclick = () => {
