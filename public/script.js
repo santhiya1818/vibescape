@@ -64,6 +64,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- PASSWORD VALIDATION FUNCTION ---
+    function validatePassword(password) {
+        // Check if password is at least 8 characters
+        if (password.length < 8) {
+            return "Password must be at least 8 characters long.";
+        }
+        
+        // Check if password contains at least one letter
+        if (!/[A-Za-z]/.test(password)) {
+            return "Password must contain at least one letter.";
+        }
+        
+        // Check if password contains at least one number
+        if (!/[0-9]/.test(password)) {
+            return "Password must contain at least one number.";
+        }
+        
+        return null; // Password is valid
+    }
+
     // --- SIGNUP FORM LOGIC ---
     const signupForm = document.getElementById('signup-form');
     if (signupForm) {
@@ -76,6 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+
+            // Validate password strength
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                if (messageDiv) {
+                    messageDiv.textContent = passwordError;
+                    messageDiv.style.color = '#dc3545'; // Red color for error
+                    messageDiv.style.display = 'block';
+                }
+                return;
+            }
 
             if (password !== confirmPassword) {
                 if (messageDiv) {
@@ -120,6 +151,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // Add real-time password validation feedback
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+            passwordInput.addEventListener('input', (e) => {
+                const password = e.target.value;
+                const passwordError = validatePassword(password);
+                
+                if (password.length > 0 && passwordError) {
+                    // Show validation error
+                    if (messageDiv) {
+                        messageDiv.textContent = passwordError;
+                        messageDiv.style.color = '#dc3545';
+                        messageDiv.style.display = 'block';
+                    }
+                } else if (password.length > 0 && !passwordError) {
+                    // Show success message
+                    if (messageDiv) {
+                        messageDiv.textContent = "Password meets requirements ✓";
+                        messageDiv.style.color = 'var(--primary-color)';
+                        messageDiv.style.display = 'block';
+                    }
+                } else {
+                    // Hide message when input is empty
+                    if (messageDiv) {
+                        messageDiv.style.display = 'none';
+                    }
+                }
+            });
+        }
     }
 
     // --- LOGIN FORM LOGIC ---
