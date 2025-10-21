@@ -582,4 +582,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Refresh songs periodically to get new uploads without reloading the page
     setInterval(loadSongsFromServer, 30000);
-});
+    
+}); // End of DOMContentLoaded event listener 
