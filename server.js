@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
-const dbURI = 'mongodb://localhost:27017/vibescape';
+const dbURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vibescape';
 mongoose.connect(dbURI)
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch(err => console.error('❌ Could not connect to MongoDB:', err));
