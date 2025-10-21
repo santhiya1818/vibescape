@@ -2,16 +2,64 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let songs = []; // This will be filled by the server
 
-    // Fetches the song list from the server's API
+    // Optimized function to fetch songs with caching and timeout
     async function loadSongsFromServer() {
         try {
-            const response = await fetch('/api/songs');
-            if (!response.ok) throw new Error('Failed to fetch song list');
-            songs = await response.json();
+            // Add timeout to prevent hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
+            const response = await fetch('/api/songs', {
+                signal: controller.signal,
+                cache: 'default' // Use browser cache when possible
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            
+            const newSongs = await response.json();
+            
+            // Only update if we got valid data
+            if (Array.isArray(newSongs) && newSongs.length > 0) {
+                songs = newSongs;
+                // Cache songs in localStorage as fallback
+                try {
+                    localStorage.setItem('vibescape-songs-cache', JSON.stringify(songs));
+                    localStorage.setItem('vibescape-songs-timestamp', Date.now().toString());
+                } catch (e) {
+                    console.warn('Could not cache songs:', e);
+                }
+            }
         } catch (error) {
             console.error('Could not load songs from server:', error);
-            // You could show an error message on the page if you want
+            
+            // Try to load from cache as fallback
+            tryLoadFromCache();
         }
+    }
+    
+    // Fallback function to load cached songs
+    function tryLoadFromCache() {
+        try {
+            const cachedSongs = localStorage.getItem('vibescape-songs-cache');
+            const timestamp = localStorage.getItem('vibescape-songs-timestamp');
+            
+            if (cachedSongs && timestamp) {
+                const cacheAge = Date.now() - parseInt(timestamp);
+                // Use cache if less than 5 minutes old
+                if (cacheAge < 5 * 60 * 1000) {
+                    songs = JSON.parse(cachedSongs);
+                    console.log('Loaded songs from cache');
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not load from cache:', e);
+        }
+        
+        // If no cache available, show error
+        console.warn('No songs available - server unreachable and no cache');
     }
 
     // === Theme Toggle ===
@@ -198,13 +246,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
         console.log('Search results:', results); // Debug log
-        searchResultsList.innerHTML = ''; // Clear previous results
-
+        
         if (results.length > 0) {
+            // Optimized: Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
             results.forEach(song => {
                 const songCard = createSongCard(song);
-                searchResultsList.appendChild(songCard);
+                fragment.appendChild(songCard);
             });
+            searchResultsList.innerHTML = ''; // Clear previous results
+            searchResultsList.appendChild(fragment);
             searchResultsSection.style.display = 'block';
         } else {
             searchResultsList.innerHTML = '<p>No results found.</p>';
@@ -411,99 +462,122 @@ document.addEventListener('DOMContentLoaded', async () => {
     // === DYNAMIC CONTENT FUNCTIONS ===
     function populateArtists() {
         const artistList = document.getElementById('artist-list');
+        if (!artistList) return;
+        
         const uniqueArtists = [...new Map(songs.map(song => [song.artist, song])).values()];
-        artistList.innerHTML = '';
-        uniqueArtists.forEach(artist => {
-            const artistCardHTML = `
-                <div class="artist-card" data-artist="${artist.artist}">
-                    <img src="${artist.artistArt}" alt="${artist.artist}">
-                    <div class="artist-name">${artist.artist}</div>
-                </div>`;
-            artistList.innerHTML += artistCardHTML;
-        });
+        
+        // Optimized: Build all HTML at once instead of concatenating
+        const artistCardsHTML = uniqueArtists.map(artist => `
+            <div class="artist-card" data-artist="${artist.artist}">
+                <img src="${artist.artistArt}" alt="${artist.artist}">
+                <div class="artist-name">${artist.artist}</div>
+            </div>`
+        ).join('');
+        
+        artistList.innerHTML = artistCardsHTML;
     }
 
     function displaySongsForArtist(artistName) {
         const artistSongsSection = document.getElementById('artist-songs');
-        document.getElementById('artist-title').textContent = `More from ${artistName}`;
+        if (!artistSongsSection) return;
+        
+        const artistTitle = document.getElementById('artist-title');
         const songList = document.getElementById('artist-song-list');
-        songList.innerHTML = '';
+        
+        if (artistTitle) artistTitle.textContent = `More from ${artistName}`;
+        if (!songList) return;
+        
         const songsByArtist = songs.filter(song => song.artist === artistName);
-        songsByArtist.forEach(song => {
-            const trackCardHTML = `
-                <div class="track-card" data-title="${song.title}">
-                    <img src="${song.art}" alt="${song.title}" class="track-card-art">
-                    <div class="track-card-info">
-                        <div class="track-card-title">${song.title}</div>
-                        <div class="track-card-artist">${song.artist}</div>
-                    </div>
-                    <div class="menu-btn">⋮</div>
-                    <div class="menu-options">
-                        <div class="add-to-playlist">Add to Playlist</div>
-                        <div class="add-to-favourites">Add to Favourites</div>
-                    </div>
-                </div>`;
-            songList.innerHTML += trackCardHTML;
-        });
+        
+        // Optimized: Build all HTML at once
+        const trackCardsHTML = songsByArtist.map(song => `
+            <div class="track-card" data-title="${song.title}">
+                <img src="${song.art}" alt="${song.title}" class="track-card-art">
+                <div class="track-card-info">
+                    <div class="track-card-title">${song.title}</div>
+                    <div class="track-card-artist">${song.artist}</div>
+                </div>
+                <div class="menu-btn">⋮</div>
+                <div class="menu-options">
+                    <div class="add-to-playlist">Add to Playlist</div>
+                    <div class="add-to-favourites">Add to Favourites</div>
+                </div>
+            </div>`
+        ).join('');
+        
+        songList.innerHTML = trackCardsHTML;
         artistSongsSection.style.display = 'block';
     }
 
     function displaySongsForGenre(genre) {
         const genreSongList = document.getElementById('genre-song-list');
-        document.getElementById('genre-title').textContent = `${genre} Songs`;
-        genreSongList.innerHTML = '';
+        const genreTitle = document.getElementById('genre-title');
+        const genreSongs = document.getElementById('genre-songs');
+        
+        if (!genreSongList || !genreTitle || !genreSongs) return;
+        
+        genreTitle.textContent = `${genre} Songs`;
+        
         const songsInGenre = songs.filter(song => song.genre === genre);
+        
         if (songsInGenre.length > 0) {
-            songsInGenre.forEach(song => {
-                const trackCardHTML = `
-                  <div class="track-card" data-title="${song.title}">
-                    <img src="${song.art}" alt="${song.title}" class="track-card-art">
-                    <div class="track-card-info">
-                      <div class="track-card-title">${song.title}</div>
-                      <div class="track-card-artist">${song.artist}</div>
-                    </div>
-                    <div class="menu-btn">⋮</div>
-                    <div class="menu-options">
-                      <div class="add-to-playlist">Add to Playlist</div>
-                      <div class="add-to-favourites">Add to Favourites</div>
-                    </div>
-                  </div>`;
-                genreSongList.innerHTML += trackCardHTML;
-            });
+            // Optimized: Build all HTML at once
+            const trackCardsHTML = songsInGenre.map(song => `
+                <div class="track-card" data-title="${song.title}">
+                  <img src="${song.art}" alt="${song.title}" class="track-card-art">
+                  <div class="track-card-info">
+                    <div class="track-card-title">${song.title}</div>
+                    <div class="track-card-artist">${song.artist}</div>
+                  </div>
+                  <div class="menu-btn">⋮</div>
+                  <div class="menu-options">
+                    <div class="add-to-playlist">Add to Playlist</div>
+                    <div class="add-to-favourites">Add to Favourites</div>
+                  </div>
+                </div>`
+            ).join('');
+            genreSongList.innerHTML = trackCardsHTML;
         } else {
             genreSongList.innerHTML = `<p style="color: var(--subtext-color);">No songs found for this genre.</p>`;
         }
-        document.getElementById('genre-songs').style.display = 'block';
+        
+        genreSongs.style.display = 'block';
     }
 
     function updateRecentlyPlayed() {
         const recentlyPlayedList = document.getElementById('recently-played-list');
-        recentlyPlayedList.innerHTML = '';
+        if (!recentlyPlayedList) return;
+        
         const history = [...new Set(JSON.parse(localStorage.getItem('playHistory')) || [])];
         const recentSongsToDisplay = history.slice(0, 6);
+        
         if (recentSongsToDisplay.length === 0) {
             recentlyPlayedList.innerHTML = `<p style="color: var(--subtext-color);">Your recently played songs will appear here.</p>`;
             return;
         }
-        recentSongsToDisplay.forEach(songTitle => {
-            const songData = songs.find(s => s.title === songTitle);
-            if (songData) {
-                const trackCardHTML = `
-                  <div class="track-card" data-title="${songData.title}">
-                    <img src="${songData.art}" alt="${songData.title}" class="track-card-art">
-                    <div class="track-card-info">
-                        <div class="track-card-title">${songData.title}</div>
-                        <div class="track-card-artist">${songData.artist}</div>
-                    </div>
-                    <div class="menu-btn">⋮</div>
-                    <div class="menu-options">
-                      <div class="add-to-playlist">Add to Playlist</div>
-                      <div class="add-to-favourites">Add to Favourites</div>
-                    </div>
-                  </div>`;
-                recentlyPlayedList.innerHTML += trackCardHTML;
-            }
-        });
+        
+        // Optimized: Build all HTML at once
+        const trackCardsHTML = recentSongsToDisplay
+            .map(songTitle => {
+                const songData = songs.find(s => s.title === songTitle);
+                return songData ? `
+                    <div class="track-card" data-title="${songData.title}">
+                      <img src="${songData.art}" alt="${songData.title}" class="track-card-art">
+                      <div class="track-card-info">
+                          <div class="track-card-title">${songData.title}</div>
+                          <div class="track-card-artist">${songData.artist}</div>
+                      </div>
+                      <div class="menu-btn">⋮</div>
+                      <div class="menu-options">
+                        <div class="add-to-playlist">Add to Playlist</div>
+                        <div class="add-to-favourites">Add to Favourites</div>
+                      </div>
+                    </div>` : '';
+            })
+            .filter(html => html)
+            .join('');
+            
+        recentlyPlayedList.innerHTML = trackCardsHTML;
     }
 
     // === SINGLE EVENT LISTENER FOR ALL DYNAMIC CLICKS ===
@@ -560,18 +634,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // === INITIAL APP STARTUP SEQUENCE ===
-    await loadSongsFromServer(); // First, get the song list from the server
-    
-    // Then, initialize the UI with the loaded songs
-    if (songs.length > 0) {
-        loadSong(currentIndex);
-        updateRecentlyPlayed();
-        populateArtists();
-    } else {
-        console.error("Application cannot start: No songs were loaded from the server or fallback.");
+    // === HELPER FUNCTIONS FOR BETTER UX ===
+    function initializePageUI() {
+        // Initialize UI components that don't require server data
+        updateRecentlyPlayed(); // This works with localStorage
+        
+        // Show a loading indicator for dynamic content
+        const artistList = document.getElementById('artist-list');
+        if (artistList) {
+            artistList.innerHTML = '<div class="loading">Loading artists...</div>';
+        }
     }
     
-    // Refresh songs periodically to get new uploads without reloading the page
-    setInterval(loadSongsFromServer, 30000);
+    function showErrorMessage(message) {
+        const artistList = document.getElementById('artist-list');
+        if (artistList) {
+            artistList.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+    }
+
+    // === OPTIMIZED STARTUP SEQUENCE ===
+    // Show page immediately, load songs asynchronously
+    initializePageUI();
+    
+    // Load songs in background without blocking page display
+    loadSongsFromServer().then(() => {
+        if (songs.length > 0) {
+            loadSong(currentIndex);
+            updateRecentlyPlayed();
+            populateArtists();
+            console.log('Songs loaded successfully');
+        } else {
+            console.warn("No songs loaded from server, some features may be limited");
+        }
+    }).catch(error => {
+        console.error("Failed to load songs:", error);
+        showErrorMessage("Failed to load music library. Please check your connection.");
+    });
+    
+    // Refresh songs periodically (reduced frequency to improve performance)
+    setInterval(loadSongsFromServer, 60000); // Changed from 30s to 60s
 });
