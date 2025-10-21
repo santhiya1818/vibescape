@@ -6,11 +6,14 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-const port = 3030;
+const port = process.env.PORT || 3030;
 
 // Middleware
+app.use(cors());
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
 
