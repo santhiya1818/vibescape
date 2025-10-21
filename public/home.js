@@ -174,6 +174,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchResultsSection = document.getElementById('search-results');
     const searchResultsList = document.getElementById('search-results-list');
 
+    console.log('Search elements found:', {
+        searchInput: !!searchInput,
+        searchButton: !!searchButton,
+        searchResultsSection: !!searchResultsSection,
+        searchResultsList: !!searchResultsList
+    });
+
     function performSearch() {
         const query = searchInput.value.toLowerCase().trim();
         console.log('Search query:', query); // Debug log
@@ -205,12 +212,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    searchButton.addEventListener('click', performSearch);
-    searchInput.addEventListener('keyup', (event) => {
-        if (event.key === 'Enter') {
-            performSearch();
-        }
-    });
+    if (searchButton && searchInput) {
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+    } else {
+        console.error('Search elements not found!');
+    }
 
     // === CORE PLAYER FUNCTIONS ===
     function loadSong(index) {
