@@ -6,14 +6,11 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const cors = require('cors');
-require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3030;
+const port = 3030;
 
 // Middleware
-app.use(cors());
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -40,14 +37,6 @@ const userSchema = new mongoose.Schema({
     passwordResetExpires: Date
 });
 const User = mongoose.model('User', userSchema);
-
-const commentSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    text: { type: String, required: true },
-    date: { type: Date, default: Date.now },
-    userId: { type: String } // Optional: to track which user posted (for future features)
-});
-const Comment = mongoose.model('Comment', commentSchema);
 
 // Multer Setup
 const storage = multer.diskStorage({
@@ -191,58 +180,6 @@ app.post('/api/reset-password', async (req, res) => {
         res.json({ message: 'Password has been successfully reset.' });
     } catch (error) {
         res.status(500).json({ error: 'Server error.' });
-    }
-});
-
-// === COMMENTS API ENDPOINTS ===
-// Get all comments
-app.get('/api/comments', async (req, res) => {
-    try {
-        const comments = await Comment.find().sort({ date: -1 }); // Latest first
-        res.json(comments);
-    } catch (error) {
-        console.error('Get comments error:', error);
-        res.status(500).json({ error: 'Failed to fetch comments.' });
-    }
-});
-
-// Add a new comment
-app.post('/api/comments', async (req, res) => {
-    try {
-        const { username, text } = req.body;
-        
-        if (!username || !text) {
-            return res.status(400).json({ error: 'Username and comment text are required.' });
-        }
-        
-        const newComment = new Comment({
-            username: username.trim(),
-            text: text.trim(),
-            date: new Date()
-        });
-        
-        await newComment.save();
-        res.status(201).json(newComment);
-    } catch (error) {
-        console.error('Add comment error:', error);
-        res.status(500).json({ error: 'Failed to save comment.' });
-    }
-});
-
-// Delete a comment
-app.delete('/api/comments/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedComment = await Comment.findByIdAndDelete(id);
-        
-        if (!deletedComment) {
-            return res.status(404).json({ error: 'Comment not found.' });
-        }
-        
-        res.json({ message: 'Comment deleted successfully.' });
-    } catch (error) {
-        console.error('Delete comment error:', error);
-        res.status(500).json({ error: 'Failed to delete comment.' });
     }
 });
 
