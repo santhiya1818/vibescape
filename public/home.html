@@ -43,10 +43,17 @@
 <!-- Search Bar -->
 <section class="search-section">
   <div class="search-box">
-    <input type="text" placeholder="Search for songs, artists, albums..." />
-    <button>Search</button>
+    <input type="text" id="search-input" placeholder="Search for songs, artists, albums..." />
+    <button id="search-button">Search</button>
   </div>
-  
+</section>
+
+<!-- *** NEW: Search Results Section *** -->
+<section id="search-results" class="section search-results" style="display:none;">
+    <h3>Search Results</h3>
+    <div class="horizontal-scroll" id="search-results-list">
+        <!-- Search results will be injected here -->
+    </div>
 </section>
 
 <!-- Banner -->
@@ -210,6 +217,7 @@
 
 <!-- Main JS -->
 <script src="script.js"></script>
+<script src="home.js"></script>
 
 </body>
 </html>

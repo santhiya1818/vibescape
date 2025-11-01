@@ -1,0 +1,11 @@
+[
+  {
+    "title": "New Song Title",
+    "artist": "Artist Name",
+    "genre": "Pop",
+    "emotion": "Happy",
+    "file": "songs/your-file.mp3",
+    "art": "songpic/your-art.png",
+    "artistArt": "artistpic/your-artist.png"
+  }
+]
