@@ -14,23 +14,56 @@
     body.light-theme { --header-bg-color: #f5f5f5; --footer-bg-color: #f5f5f5; --text-color: #000000; --header-text-color: #000; --footer-text-color: #000; }
     .header, footer { background-color: var(--header-bg-color); color: var(--text-color); }
     footer { background-color: var(--footer-bg-color); color: var(--text-color); }
-    .playlist-btns { margin: 2rem 0 1rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-    .playlist-btn { padding: 0.6rem 1.5rem; font-size: 1rem; border-radius: 2rem; border: 1px solid #e30088; background: #fff; color: #e30088; cursor: pointer; transition: background 0.2s, color 0.2s; }
-    .playlist-btn.active, .playlist-btn:hover { background: #e30088; color: #fff; }
-    .delete-playlist-btn { color: #e30088; background: none; border: none; font-size: 1.1rem; margin-left: 0.5rem; cursor: pointer; }
-    .delete-playlist-btn:hover { color: #a0005a; }
-    .playlist-songs { margin-top: 1rem; }
-    .song-card { display: flex; align-items: center; margin: 0.5rem auto; background: #dd0580; border-radius: 1rem; padding: 0.6rem 1.2rem; max-width: 400px; box-shadow: 0 2px 8px rgba(227,0,136,0.06); }
-    .delete-checkbox { margin-right: 1rem; accent-color: #e30088; }
-    .delete-confirm-btn { margin-top: 1rem; background: #e30088; color: #fff; border: none; border-radius: 1.5rem; padding: 0.5rem 1.5rem; font-size: 1rem; cursor: pointer; }
-    .controls { margin-top: 1rem; display: flex; gap: 1rem; align-items: center; }
-    .sort-select { margin-top: 1rem; background: #e30088;display: flex;color: #fff; align-items: center; margin: 0.5rem auto; background: #dd0580; border-radius: 1rem; padding: 0.6rem 1.2rem; max-width: 400px; box-shadow: 0 2px 8px rgba(235, 230, 235, 0.926); }
-    .playing-title { font-weight: bold; color: #fff; }
-    .main-content { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem;}
-    .progress-container { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; width: 80%; max-width: 500px; }
-    .progress-container input[type="range"] { flex: 1; appearance: none; height: 5px; background: #ddd; border-radius: 5px; }
-    .progress-container input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: #e30088; border-radius: 50%; cursor: pointer; }
-    .progress-time { font-size: 0.9rem; color: #e109ab; min-width: 40px; text-align: center; }
+    /* Enhanced Playlist Styling */
+    .main-content { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 2rem 1rem; }
+    body.light-theme .main-content { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    
+    .playlist-container { max-width: 1000px; margin: 0 auto; background: rgba(255,255,255,0.95); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
+    body.light-theme .playlist-container { background: rgba(255,255,255,0.1); color: #fff; }
+    
+    .playlist-btns { margin: 2rem 0 1rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem; }
+    .playlist-btn { padding: 0.8rem 1.8rem; font-size: 1rem; border-radius: 25px; border: 2px solid #e30088; background: linear-gradient(45deg, #fff, #f8f9fa); color: #e30088; cursor: pointer; transition: all 0.3s ease; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .playlist-btn.active, .playlist-btn:hover { background: linear-gradient(45deg, #e30088, #ff1493); color: #fff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(227,0,136,0.3); }
+    .delete-playlist-btn { color: #e30088; background: none; border: none; font-size: 1.2rem; margin-left: 0.8rem; cursor: pointer; transition: all 0.3s ease; }
+    .delete-playlist-btn:hover { color: #a0005a; transform: scale(1.2); }
+    
+    .playlist-songs { margin-top: 2rem; display: grid; gap: 0.8rem; max-height: 400px; overflow-y: auto; padding-right: 10px; }
+    .playlist-songs::-webkit-scrollbar { width: 8px; }
+    .playlist-songs::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+    .playlist-songs::-webkit-scrollbar-thumb { background: linear-gradient(45deg, #e30088, #ff1493); border-radius: 10px; }
+    
+    .song-card { display: flex; align-items: center; background: linear-gradient(45deg, #fff, #f8f9fa); border-radius: 12px; padding: 0.8rem 1rem; border: 1px solid #e1e5e9; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.3s ease; position: relative; overflow: hidden; }
+    .song-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: linear-gradient(45deg, #e30088, #ff1493); }
+    .song-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(227,0,136,0.15); background: linear-gradient(45deg, #f8f9fa, #fff); }
+    body.light-theme .song-card { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; }
+    body.light-theme .song-card:hover { background: rgba(255,255,255,0.3); }
+    .delete-checkbox { margin-right: 1rem; accent-color: #e30088; width: 18px; height: 18px; cursor: pointer; }
+    .delete-confirm-btn { margin-top: 2rem; background: linear-gradient(45deg, #e30088, #ff1493); color: #fff; border: none; border-radius: 25px; padding: 0.8rem 2rem; font-size: 1rem; cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; }
+    .delete-confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(227,0,136,0.4); }
+    
+    .controls { margin: 2rem 0; display: flex; justify-content: center; gap: 1.5rem; align-items: center; }
+    .controls button { background: linear-gradient(45deg, #e30088, #ff1493); color: #fff; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+    .controls button:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(227,0,136,0.4); }
+    
+    .sort-select { margin: 1rem 0; background: linear-gradient(45deg, #e30088, #ff1493); color: #fff; border: none; border-radius: 20px; padding: 0.8rem 1.5rem; font-size: 1rem; cursor: pointer; font-weight: 600; outline: none; }
+    .sort-select option { background: #fff; color: #333; }
+    
+    .playing-title { font-weight: bold; color: #e30088; text-shadow: 0 2px 4px rgba(227,0,136,0.3); }
+    body.light-theme .playing-title { color: #fff; text-shadow: 0 2px 4px rgba(255,255,255,0.5); }
+    
+    .progress-container { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    body.light-theme .progress-container { background: rgba(255,255,255,0.2); }
+    
+    .progress-container input[type="range"] { flex: 1; appearance: none; height: 6px; background: linear-gradient(to right, #e30088, #ff1493); border-radius: 10px; outline: none; }
+    .progress-container input[type="range"]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: #fff; border: 3px solid #e30088; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(227,0,136,0.3); }
+    .progress-time { font-size: 0.95rem; color: #e30088; font-weight: 600; min-width: 45px; text-align: center; }
+    body.light-theme .progress-time { color: #fff; }
+    
+    h1 { text-align: center; color: #333; font-size: 2.5rem; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    body.light-theme h1 { color: #fff; text-shadow: 0 2px 4px rgba(255,255,255,0.3); }
+    
+    .no-songs, .error { text-align: center; padding: 2rem; color: #666; font-style: italic; font-size: 1.1rem; }
+    body.light-theme .no-songs, body.light-theme .error { color: #fff; }
     .theme-toggle { position: absolute; top: 50%; right: 90px; transform: translateY(-50%); width: 45px; height: 45px; border-radius: 50%; border: none; background-color: var(--header-bg-color); color: var(--text-color); font-size: 1.3rem; cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
     .profile { position: relative; display: inline-block; }
     .dropdown { display: none; position: absolute; top: 45px; right: 0; background: rgb(0, 0, 0); border: 1px solid #000000; border-radius: 5px; min-width: 150px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 999; }
@@ -63,30 +96,34 @@
   </header>
 
   <main class="main-content">
-    <h1>Your Playlists</h1>
-    <div class="playlist-btns" id="playlist-btns"></div>
+    <div class="playlist-container">
+      <h1><i class="fa-solid fa-music"></i> Your Playlists <i class="fa-solid fa-heart"></i></h1>
+      <div class="playlist-btns" id="playlist-btns"></div>
 
-    <select class="sort-select" id="sort-select">
-      <option value="default">Sort: Default</option>
-      <option value="asc">A → Z</option>
-      <option value="desc">Z → A</option>
-    </select>
+      <select class="sort-select" id="sort-select">
+        <option value="default">🎵 Sort: Default</option>
+        <option value="asc">📈 A → Z</option>
+        <option value="desc">📉 Z → A</option>
+      </select>
 
-    <div class="playlist-songs" id="playlist-songs"></div>
+      <div class="playlist-songs" id="playlist-songs"></div>
 
-    <div class="controls">
-      <button id="prev-song"><i class="fa-solid fa-backward"></i></button>
-      <button id="toggle-play"><i class="fa-solid fa-play"></i></button>
-      <button id="next-song"><i class="fa-solid fa-forward"></i></button>
+      <div class="controls">
+        <button id="prev-song" title="Previous Song"><i class="fa-solid fa-backward"></i></button>
+        <button id="toggle-play" title="Play/Pause"><i class="fa-solid fa-play"></i></button>
+        <button id="next-song" title="Next Song"><i class="fa-solid fa-forward"></i></button>
+      </div>
+
+      <div class="progress-container">
+        <span class="progress-time" id="current-time">0:00</span>
+        <input type="range" id="progress-bar" value="0" min="0" max="100">
+        <span class="progress-time" id="total-time">0:00</span>
+      </div>
+
+      <button class="delete-confirm-btn" id="delete-confirm-btn">
+        <i class="fa-solid fa-trash"></i> Delete Selected
+      </button>
     </div>
-
-    <div class="progress-container">
-      <span class="progress-time" id="current-time">0:00</span>
-      <input type="range" id="progress-bar" value="0" min="0" max="100">
-      <span class="progress-time" id="total-time">0:00</span>
-    </div>
-
-    <button class="delete-confirm-btn" id="delete-confirm-btn">Delete Selected</button>
   </main>
 
   <footer>
@@ -205,14 +242,50 @@
                 checkbox.dataset.songTitle = songTitle; // Use title for deletion
                 card.appendChild(checkbox);
 
+                const songIcon = document.createElement('i');
+                songIcon.className = 'fa-solid fa-music';
+                songIcon.style.marginRight = '0.8rem';
+                songIcon.style.color = '#e30088';
+                songIcon.style.fontSize = '1.1rem';
+                card.appendChild(songIcon);
+
                 const titleSpan = document.createElement('span');
                 titleSpan.textContent = songTitle;
                 titleSpan.style.flex = "1";
+                titleSpan.style.cursor = "pointer";
+                titleSpan.style.fontSize = "0.95rem";
+                titleSpan.style.fontWeight = "500";
                 if (playingIndex === idx && !audioPlayer.paused) {
                     titleSpan.classList.add("playing-title");
+                    songIcon.className = 'fa-solid fa-volume-high';
+                    songIcon.style.color = '#e30088';
                 }
                 titleSpan.onclick = () => playSong(idx);
                 card.appendChild(titleSpan);
+
+                const playBtn = document.createElement('button');
+                playBtn.innerHTML = playingIndex === idx && !audioPlayer.paused ? 
+                    '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+                playBtn.style.background = 'none';
+                playBtn.style.border = 'none';
+                playBtn.style.color = '#e30088';
+                playBtn.style.fontSize = '1rem';
+                playBtn.style.cursor = 'pointer';
+                playBtn.style.marginLeft = '0.5rem';
+                playBtn.style.padding = '0.3rem';
+                playBtn.style.borderRadius = '50%';
+                playBtn.style.transition = 'all 0.3s ease';
+                playBtn.onmouseover = () => playBtn.style.background = 'rgba(227,0,136,0.1)';
+                playBtn.onmouseout = () => playBtn.style.background = 'none';
+                playBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (playingIndex === idx && !audioPlayer.paused) {
+                        audioPlayer.pause();
+                    } else {
+                        playSong(idx);
+                    }
+                };
+                card.appendChild(playBtn);
 
                 playlistSongsDiv.appendChild(card);
             });
