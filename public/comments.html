@@ -216,44 +216,78 @@
     const commentForm = document.getElementById("commentForm");
     const commentList = document.getElementById("commentList");
 
-    function loadComments() {
-      const comments = JSON.parse(localStorage.getItem("comments")) || [];
-      commentList.innerHTML = "";
-      comments.forEach((comment, index) => {
-        const li = document.createElement("li");
-        li.className = "comment-item";
-        li.innerHTML = `
-          <div class="comment-header">
-            <span>${comment.username} • ${comment.date}</span>
-            <button class="delete-btn" onclick="deleteComment(${index})">Delete</button>
-          </div>
-          <p class="comment-text">${comment.text}</p>
-        `;
-        commentList.appendChild(li);
-      });
+    // Load comments from database
+    async function loadComments() {
+      try {
+        const response = await fetch('/api/comments');
+        if (!response.ok) throw new Error('Failed to fetch comments');
+        
+        const comments = await response.json();
+        commentList.innerHTML = "";
+        
+        comments.forEach((comment) => {
+          const li = document.createElement("li");
+          li.className = "comment-item";
+          const date = new Date(comment.date).toLocaleString();
+          li.innerHTML = `
+            <div class="comment-header">
+              <span>${comment.username} • ${date}</span>
+              <button class="delete-btn" onclick="deleteComment('${comment._id}')">Delete</button>
+            </div>
+            <p class="comment-text">${comment.text}</p>
+          `;
+          commentList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error loading comments:', error);
+        commentList.innerHTML = '<li class="comment-item"><p style="text-align: center; color: #e30088;">Failed to load comments. Please try again.</p></li>';
+      }
     }
 
-    function saveComment(username, text) {
-      const comments = JSON.parse(localStorage.getItem("comments")) || [];
-      const date = new Date().toLocaleString();
-      comments.unshift({ username, text, date });
-      localStorage.setItem("comments", JSON.stringify(comments));
-      loadComments();
+    // Save comment to database
+    async function saveComment(username, text) {
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, text })
+        });
+
+        if (!response.ok) throw new Error('Failed to save comment');
+        
+        await loadComments(); // Reload comments to show the new one
+      } catch (error) {
+        console.error('Error saving comment:', error);
+        alert('Failed to post comment. Please try again.');
+      }
     }
 
-    function deleteComment(index) {
-      const comments = JSON.parse(localStorage.getItem("comments")) || [];
-      comments.splice(index, 1);
-      localStorage.setItem("comments", JSON.stringify(comments));
-      loadComments();
+    // Delete comment from database (make it global for onclick handlers)
+    window.deleteComment = async function(commentId) {
+      if (!confirm('Are you sure you want to delete this comment?')) return;
+      
+      try {
+        const response = await fetch(`/api/comments/${commentId}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error('Failed to delete comment');
+        
+        await loadComments(); // Reload comments to remove the deleted one
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Failed to delete comment. Please try again.');
+      }
     }
 
-    commentForm.addEventListener("submit", (e) => {
+    commentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const username = document.getElementById("username").value.trim() || "Anonymous";
       const text = document.getElementById("commentText").value.trim();
       if (text) {
-        saveComment(username, text);
+        await saveComment(username, text);
         commentForm.reset();
       }
     });
