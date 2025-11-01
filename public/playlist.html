@@ -395,7 +395,12 @@
                     audioPlayer.src = songData.file;
                     audioPlayer.currentTime = 0;
                 }
-                audioPlayer.play();
+                audioPlayer.play().then(() => {
+                    // Add to database history when song starts playing
+                    if (typeof addToHistory === 'function') {
+                        addToHistory(songData.title, songData.artist);
+                    }
+                });
                 playingIndex = index;
                 updateToggleIcon();
                 renderPlaylistSongs(); // Re-render to highlight the playing song
@@ -522,5 +527,6 @@
         renderPlaylistSongs();        // Finally, render the songs for the default playlist
     });
   </script>
+  <script src="history-tracker.js"></script>
 </body>
 </html>

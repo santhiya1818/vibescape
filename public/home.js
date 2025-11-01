@@ -330,6 +330,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log('Audio playing successfully');
                 updatePlayButtonsState(true);
                 document.getElementById('full-player').style.display = 'flex';
+                
+                // Add to database history when song starts playing
+                if (songs && songs[currentIndex] && typeof addToHistory === 'function') {
+                    const currentSong = songs[currentIndex];
+                    addToHistory(currentSong.title, currentSong.artist);
+                }
             })
             .catch(error => {
                 console.error("Error playing audio:", error);

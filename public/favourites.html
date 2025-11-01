@@ -190,11 +190,25 @@
             }
 
             if (playingTitle === title) { // If it's the current song, just toggle
-                audioEl.paused ? audioEl.play() : audioEl.pause();
+                if (audioEl.paused) {
+                    audioEl.play().then(() => {
+                        // Add to history when resuming
+                        if (typeof addToHistory === 'function') {
+                            addToHistory(songData.title, songData.artist);
+                        }
+                    });
+                } else {
+                    audioEl.pause();
+                }
             } else { // Load and play a new song
                 playingTitle = title;
                 audioEl.src = songData.file;
-                audioEl.play();
+                audioEl.play().then(() => {
+                    // Add to history when starting new song
+                    if (typeof addToHistory === 'function') {
+                        addToHistory(songData.title, songData.artist);
+                    }
+                });
             }
             buildAndRender();
         }
@@ -367,5 +381,6 @@
         buildAndRender(); // Then render the page
     });
   </script>
+  <script src="history-tracker.js"></script>
 </body>
 </html>
