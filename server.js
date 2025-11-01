@@ -18,8 +18,40 @@ app.use(express.static(path.join(__dirname, 'public')));
 // IMPORTANT: Replace <YOUR_PASSWORD_HERE> with your actual MongoDB Atlas password
 const dbURI = process.env.MONGODB_URI || "mongodb+srv://vibescapeUser:santhiya1325@cluster0.dfq4mbe.mongodb.net/vibescape?retryWrites=true&w=majority";
 mongoose.connect(dbURI)
-    .then(() => console.log('✅ Connected to MongoDB Atlas'))
+    .then(() => {
+        console.log('✅ Connected to MongoDB Atlas');
+        // Create default admin user if none exists
+        createDefaultAdmin();
+    })
     .catch(err => console.error('❌ Could not connect to MongoDB Atlas:', err));
+
+// Function to create default admin user
+async function createDefaultAdmin() {
+    try {
+        const existingAdmin = await User.findOne({ role: 'admin' });
+        if (!existingAdmin) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash('admin123', salt);
+            
+            const adminUser = new User({
+                username: 'admin',
+                email: 'admin@vibescape.com',
+                password: hashedPassword,
+                role: 'admin'
+            });
+            
+            await adminUser.save();
+            console.log('🔑 Default admin user created successfully!');
+            console.log('📧 Admin Email: admin@vibescape.com');
+            console.log('🔒 Admin Password: admin123');
+            console.log('⚠️  Please change the password after first login!');
+        } else {
+            console.log('ℹ️  Admin user already exists');
+        }
+    } catch (error) {
+        console.error('❌ Error creating default admin:', error);
+    }
+}
 
 // Mongoose Schemas
 const songSchema = new mongoose.Schema({
