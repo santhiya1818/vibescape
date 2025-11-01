@@ -92,6 +92,11 @@ body {
     background-color: rgba(0, 0, 0, 0.6);
 }
 
+/* Light theme main content */
+body.light-theme .main-content {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
 .login-container {
     width: 100%;
     max-width: 420px;
@@ -449,6 +454,26 @@ body.light-theme .btn-secondary:hover {
   display: flex;
   justify-content: center;
 }
+
+/* Light theme search section */
+body.light-theme .search-section {
+  background-color: #f8f9fa;
+}
+
+body.light-theme .search-box input {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+body.light-theme .search-box button {
+  background-color: #a90781;
+  color: #fff;
+}
+
+body.light-theme .search-box button:hover {
+  background-color: #a60965;
+}
 .search-box {
   display: flex;
   width: 100%;
@@ -619,6 +644,30 @@ footer a:hover {
   padding: 20px;
   background-color: #181818;
   text-align: center;
+}
+
+/* Light theme emotion section */
+body.light-theme .emotion-section {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+body.light-theme #start-detection {
+  background-color: #28a745;
+  color: #fff;
+}
+
+body.light-theme #start-detection:hover {
+  background-color: #218838;
+}
+
+body.light-theme #stop-detection {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+body.light-theme #stop-detection:hover {
+  background-color: #c82333;
 }
 #webcam-container {
   margin-top: 15px;
