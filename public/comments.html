@@ -258,13 +258,28 @@
       }
     });
 
-    // Theme toggle functionality
+    // Theme toggle functionality with localStorage sync
     const themeToggle = document.getElementById("theme-toggle");
+    
+    // Load saved theme on page load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+    }
+    
     themeToggle.addEventListener("click", () => {
       document.body.classList.toggle("light-theme");
-      themeToggle.innerHTML = document.body.classList.contains("light-theme")
-        ? '<i class="fa-solid fa-moon"></i>'
-        : '<i class="fa-solid fa-sun"></i>';
+      
+      if (document.body.classList.contains('light-theme')) {
+          // Switch to light theme
+          localStorage.setItem('theme', 'light');
+          themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+      } else {
+          // Switch to dark theme
+          localStorage.setItem('theme', 'dark');
+          themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+      }
     });
 
     loadComments();
