@@ -228,14 +228,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     messageDiv.style.color = 'var(--primary-color)';
                     messageDiv.style.display = 'block';
 
-                    // Store the token so the user stays logged in
-                    // NOTE: Using sessionStorage instead of localStorage for better security
+                    // Store the token and user info
                     sessionStorage.setItem('vibescape-token', result.token);
                     sessionStorage.setItem('vibescape-user', result.username);
+                    sessionStorage.setItem('vibescape-role', result.role);
 
-                    // Redirect to the main app after a short delay
+                    // Redirect based on user role
                     setTimeout(() => {
-                        window.location.href = '/home.html';
+                        if (result.role === 'admin') {
+                            window.location.href = '/admin.html';
+                        } else {
+                            window.location.href = '/home.html';
+                        }
                     }, 1500);
 
                 } else {

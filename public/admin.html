@@ -169,18 +169,64 @@
     </div>
 
     <script>
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', function () {
-                document.body.classList.toggle('light-mode');
-                const icon = this.querySelector('i');
-                if (icon) {
-                    icon.classList.toggle('fa-sun');
-                    icon.classList.toggle('fa-moon');
+        // Admin Authentication Check
+        async function verifyAdminAccess() {
+            const token = sessionStorage.getItem('vibescape-token');
+            const role = sessionStorage.getItem('vibescape-role');
+            
+            // Check if user has token and admin role
+            if (!token || role !== 'admin') {
+                alert('Access denied. Admin credentials required.');
+                window.location.href = '/login.html';
+                return false;
+            }
+            
+            // Verify with server
+            try {
+                const response = await fetch('/api/admin/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    alert('Admin verification failed. Please login again.');
+                    sessionStorage.clear();
+                    window.location.href = '/login.html';
+                    return false;
                 }
-            });
+                
+                return true;
+            } catch (error) {
+                console.error('Admin verification error:', error);
+                alert('Unable to verify admin access. Please login again.');
+                window.location.href = '/login.html';
+                return false;
+            }
         }
+
+        // Initialize page only if admin access is verified
+        (async function initAdminPage() {
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) return;
+            
+            // Continue with admin page initialization...
+            initializeAdminPanel();
+        })();
+
+        function initializeAdminPanel() {
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    document.body.classList.toggle('light-mode');
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-sun');
+                        icon.classList.toggle('fa-moon');
+                    }
+                });
+            }
 
         const uploadForm = document.getElementById('uploadForm');
         const uploadBtn = document.getElementById('uploadBtn');
@@ -314,6 +360,8 @@
 
         // Load songs when the page is ready
         loadSongs();
+        
+        } // End of initializeAdminPanel function
     </script>
 </body>
 </html>

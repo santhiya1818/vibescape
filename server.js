@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
     passwordResetToken: String,
     passwordResetExpires: Date
 });
@@ -141,12 +142,72 @@ app.post('/api/login', async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ error: 'Invalid credentials.' });
         }
-        const payload = { id: user._id, username: user.username };
+        const payload = { id: user._id, username: user.username, role: user.role };
         const token = jwt.sign(payload, 'your_jwt_secret', { expiresIn: '1d' });
-        res.json({ message: 'Login successful! Redirecting...', token, username: user.username });
+        res.json({ 
+            message: 'Login successful! Redirecting...', 
+            token, 
+            username: user.username,
+            role: user.role 
+        });
     } catch (error) {
         res.status(500).json({ error: 'Server error during login.' });
     }
+});
+
+// Create admin user (one-time setup) - Remove this in production
+app.post('/api/create-admin', async (req, res) => {
+    try {
+        // Check if admin already exists
+        const existingAdmin = await User.findOne({ role: 'admin' });
+        if (existingAdmin) {
+            return res.status(400).json({ error: 'Admin user already exists.' });
+        }
+
+        const { username, email, password } = req.body;
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        
+        const adminUser = new User({
+            username,
+            email,
+            password: hashedPassword,
+            role: 'admin'
+        });
+        
+        await adminUser.save();
+        res.json({ message: 'Admin user created successfully!' });
+    } catch (error) {
+        console.error('Error creating admin:', error);
+        res.status(500).json({ error: 'Server error creating admin.' });
+    }
+});
+
+// Middleware to verify admin role
+const verifyAdmin = async (req, res, next) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const user = await User.findById(decoded.id);
+        
+        if (!user || user.role !== 'admin') {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        req.user = user;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid token.' });
+    }
+};
+
+// Admin route to check admin status
+app.get('/api/admin/verify', verifyAdmin, (req, res) => {
+    res.json({ message: 'Admin access verified', user: req.user.username });
 });
 
 app.post('/api/forgot-password', async (req, res) => {
