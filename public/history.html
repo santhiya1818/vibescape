@@ -72,7 +72,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
         let allSongs = []; // This will hold the entire song library from the server
-        let history = JSON.parse(localStorage.getItem('playHistory')) || [];
+        let history = [];
 
         const historyList = document.getElementById('history-list');
         const clearBtn = document.getElementById('clear-history');
@@ -80,6 +80,52 @@
         const profileDiv = document.getElementById('profile');
         const profileDropdown = document.getElementById('profile-dropdown');
         
+        // Get auth token for API calls
+        function getAuthToken() {
+            return sessionStorage.getItem('vibescape-token');
+        }
+
+        // Check if user is logged in
+        function checkAuthAndRedirect() {
+            const token = getAuthToken();
+            if (!token) {
+                alert('Please login to view your history.');
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Load user's history from database
+        async function loadHistoryFromServer() {
+            if (!checkAuthAndRedirect()) return;
+
+            try {
+                const token = getAuthToken();
+                const response = await fetch('/api/history', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert('Session expired. Please login again.');
+                        window.location.href = '/login.html';
+                        return;
+                    }
+                    throw new Error('Failed to fetch history');
+                }
+                
+                history = await response.json();
+                console.log(`Successfully loaded ${history.length} history entries from database.`);
+                renderHistory();
+            } catch (error) {
+                console.error("Could not load history:", error);
+                historyList.innerHTML = '<p style="text-align:center; color: var(--delete-color);">Failed to load history from server.</p>';
+            }
+        }
+
         // Fetch the master song library from the server
         async function loadSongsFromServer() {
             try {
@@ -93,10 +139,6 @@
             }
         }
 
-        function saveHistory() {
-            localStorage.setItem('playHistory', JSON.stringify(history));
-        }
-
         function renderHistory() {
             historyList.innerHTML = '';
             if (history.length === 0) {
@@ -107,17 +149,35 @@
 
             clearBtn.style.display = 'block';
             
-            // Reverse the history to show the most recent songs first
-            [...history].reverse().forEach((songTitle, index) => {
-                const originalIndex = history.length - 1 - index; // Correct index in the original array
-                const songData = allSongs.find(s => s.title === songTitle);
+            // History already comes sorted from newest first from the database
+            history.forEach((historyEntry) => {
+                const songData = allSongs.find(s => s.title === historyEntry.songTitle);
 
                 const item = document.createElement('div');
                 item.className = 'history-item';
 
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'song-info';
+
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'song-title';
-                titleDiv.textContent = songTitle;
+                titleDiv.textContent = historyEntry.songTitle;
+
+                const artistDiv = document.createElement('div');
+                artistDiv.className = 'song-artist';
+                artistDiv.textContent = `by ${historyEntry.artist}`;
+                artistDiv.style.fontSize = '0.9rem';
+                artistDiv.style.opacity = '0.8';
+
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'play-time';
+                timeDiv.textContent = new Date(historyEntry.playedAt).toLocaleString();
+                timeDiv.style.fontSize = '0.8rem';
+                timeDiv.style.opacity = '0.6';
+
+                infoDiv.appendChild(titleDiv);
+                infoDiv.appendChild(artistDiv);
+                infoDiv.appendChild(timeDiv);
 
                 const audio = document.createElement('audio');
                 audio.controls = true;
@@ -126,34 +186,41 @@
                 if (songData) {
                     audio.src = songData.file;
                 } else {
-                    // As a fallback, disable the audio player if the song isn't in the library
-                    titleDiv.textContent += " (Removed from library)";
+                    // As a fallback, show that song is not available
+                    titleDiv.textContent += " (No longer available)";
                     titleDiv.style.opacity = "0.5";
-                    audio.removeAttribute('src');
                     audio.style.display = 'none';
                 }
 
-                const delBtn = document.createElement('button');
-                delBtn.className = 'delete-btn';
-                delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                delBtn.onclick = () => {
-                    history.splice(originalIndex, 1);
-                    saveHistory();
-                    renderHistory();
-                };
-
-                item.appendChild(titleDiv);
+                item.appendChild(infoDiv);
                 item.appendChild(audio);
-                item.appendChild(delBtn);
                 historyList.appendChild(item);
             });
         }
 
-        clearBtn.onclick = () => {
+        clearBtn.onclick = async () => {
             if (confirm('Are you sure you want to clear your entire listening history?')) {
-                history = [];
-                saveHistory();
-                renderHistory();
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch('/api/history', {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        history = [];
+                        renderHistory();
+                    } else {
+                        console.error('Failed to clear history:', await response.text());
+                        alert('Failed to clear history. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error clearing history:', error);
+                    alert('An error occurred while clearing history.');
+                }
             }
         };
 

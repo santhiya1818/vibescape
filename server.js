@@ -79,6 +79,16 @@ const commentSchema = new mongoose.Schema({
 });
 const Comment = mongoose.model('Comment', commentSchema);
 
+// History Schema for individual user listening history
+const historySchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true },
+    songTitle: { type: String, required: true },
+    artist: { type: String, required: true },
+    playedAt: { type: Date, default: Date.now }
+});
+const History = mongoose.model('History', historySchema);
+
 // Multer Setup
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -333,6 +343,88 @@ app.delete('/api/comments/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting comment:', error);
         res.status(500).json({ error: 'Failed to delete comment.' });
+    }
+});
+
+// --- HISTORY API ENDPOINTS ---
+
+// Get user's listening history
+app.get('/api/history', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const history = await History.find({ userId: decoded.id })
+            .sort({ playedAt: -1 }) // Sort by newest first
+            .limit(50); // Limit to last 50 songs
+
+        res.json(history);
+    } catch (error) {
+        console.error('Error fetching history:', error);
+        res.status(500).json({ error: 'Failed to fetch history.' });
+    }
+});
+
+// Add song to user's history
+app.post('/api/history', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const { songTitle, artist } = req.body;
+
+        if (!songTitle || !artist) {
+            return res.status(400).json({ error: 'Song title and artist are required.' });
+        }
+
+        // Check if this exact song was played recently (within last 30 seconds) to avoid duplicates
+        const recentPlay = await History.findOne({
+            userId: decoded.id,
+            songTitle,
+            artist,
+            playedAt: { $gte: new Date(Date.now() - 30000) } // Last 30 seconds
+        });
+
+        if (recentPlay) {
+            return res.json({ message: 'Song already in recent history.' });
+        }
+
+        const historyEntry = new History({
+            userId: decoded.id,
+            username: decoded.username,
+            songTitle,
+            artist
+        });
+
+        await historyEntry.save();
+        res.status(201).json(historyEntry);
+    } catch (error) {
+        console.error('Error adding to history:', error);
+        res.status(500).json({ error: 'Failed to add to history.' });
+    }
+});
+
+// Clear user's history
+app.delete('/api/history', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        await History.deleteMany({ userId: decoded.id });
+
+        res.json({ message: 'History cleared successfully.' });
+    } catch (error) {
+        console.error('Error clearing history:', error);
+        res.status(500).json({ error: 'Failed to clear history.' });
     }
 });
 
