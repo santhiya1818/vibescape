@@ -35,8 +35,8 @@
         color: #fff;
     }
     body.light-theme .playlist-container { 
-        background: rgba(255,255,255,0.1); 
-        color: #fff; 
+        background: rgba(255,255,255,0.9); 
+        color: #333; 
     }
     
     .playlist-btns { margin: 2rem 0 1rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem; }
@@ -140,7 +140,7 @@
     .progress-container input[type="range"] { flex: 1; appearance: none; height: 6px; background: linear-gradient(to right, #e30088, #ff1493); border-radius: 10px; outline: none; }
     .progress-container input[type="range"]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: #fff; border: 3px solid #e30088; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(227,0,136,0.3); }
     .progress-time { font-size: 0.95rem; color: #e30088; font-weight: 600; min-width: 45px; text-align: center; }
-    body.light-theme .progress-time { color: #fff; }
+    body.light-theme .progress-time { color: #333; }
     
     h1 { 
         text-align: center; 
@@ -150,12 +150,12 @@
         text-shadow: 0 2px 4px rgba(0,0,0,0.3); 
     }
     body.light-theme h1 { 
-        color: #fff; 
-        text-shadow: 0 2px 4px rgba(255,255,255,0.3); 
+        color: #333; 
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1); 
     }
     
     .no-songs, .error { text-align: center; padding: 2rem; color: #666; font-style: italic; font-size: 1.1rem; }
-    body.light-theme .no-songs, body.light-theme .error { color: #fff; }
+    body.light-theme .no-songs, body.light-theme .error { color: #333; }
     .theme-toggle { position: absolute; top: 50%; right: 90px; transform: translateY(-50%); width: 45px; height: 45px; border-radius: 50%; border: none; background-color: var(--header-bg-color); color: var(--text-color); font-size: 1.3rem; cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
     .profile { position: relative; display: inline-block; }
     .dropdown { display: none; position: absolute; top: 45px; right: 0; background: rgb(0, 0, 0); border: 1px solid #000000; border-radius: 5px; min-width: 150px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 999; }
