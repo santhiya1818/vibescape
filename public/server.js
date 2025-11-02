@@ -223,6 +223,65 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// Songs API
+app.get('/api/songs', async (req, res) => {
+    try {
+        const songs = await Song.find().sort({ createdAt: -1 });
+        res.json(songs);
+    } catch (error) {
+        console.error('Error fetching songs:', error);
+        res.status(500).json({ error: 'Failed to fetch songs' });
+    }
+});
+
+// Upload API (Admin only)
+const multer = require('multer');
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
+
+app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'albumArt', maxCount: 1 },
+    { name: 'artistImage', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const { title, artist, genre } = req.body;
+        
+        if (!title || !artist) {
+            return res.status(400).json({ error: 'Title and artist are required' });
+        }
+
+        // For now, we'll store file info without actual file upload
+        // In production, you'd upload to cloud storage like AWS S3
+        const song = new Song({
+            title,
+            artist,
+            file: `/songs/${title.replace(/\s+/g, '_')}.mp3`, // Mock file path
+            image: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg'
+        });
+
+        await song.save();
+        res.status(201).json({ message: 'Song uploaded successfully', song });
+    } catch (error) {
+        console.error('Upload error:', error);
+        res.status(500).json({ error: 'Failed to upload song' });
+    }
+});
+
+// Delete song API (Admin only)
+app.delete('/api/songs/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Song.findByIdAndDelete(id);
+        res.json({ message: 'Song deleted successfully' });
+    } catch (error) {
+        console.error('Delete error:', error);
+        res.status(500).json({ error: 'Failed to delete song' });
+    }
+});
+
 // Comments API
 app.get('/api/comments', async (req, res) => {
     try {
