@@ -360,7 +360,7 @@
                 }
                 songsList.innerHTML = '';
                 songs.forEach(song => {
-                    const uploadDate = song.uploadDate ? new Date(song.uploadDate).toLocaleString() : 
+                    const uploadDate = song.uploaddate ? new Date(song.uploaddate).toLocaleString() : 
                                      song.createdAt ? new Date(song.createdAt).toLocaleString() : 'Unknown';
                     const songItem = document.createElement('div');
                     songItem.className = 'song-item';

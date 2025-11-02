@@ -66,10 +66,9 @@ const songSchema = new mongoose.Schema({
     file: { type: String, required: true },
     genre: { type: String, default: 'Unknown' },
     emotion: { type: String, default: 'Unknown' },
-    image: String,
-    albumArt: String,
-    artistImage: String,
-    uploadDate: { type: Date, default: Date.now },
+    art: String,  // Changed from 'image' to match your database
+    Artistart: String,  // Changed from 'artistImage' to match your database
+    uploaddate: { type: Date, default: Date.now },  // Changed from 'uploadDate' to match your database
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -307,6 +306,13 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
             return res.status(400).json({ error: 'Title and artist are required' });
         }
 
+        // Determine file extension from uploaded audio file
+        let fileExtension = '.mp3'; // default
+        if (req.files && req.files.audio && req.files.audio[0]) {
+            const originalName = req.files.audio[0].originalname;
+            fileExtension = originalName.substring(originalName.lastIndexOf('.'));
+        }
+
         // For now, we'll store file info without actual file upload
         // In production, you'd upload to cloud storage like AWS S3
         const song = new Song({
@@ -314,11 +320,10 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
             artist,
             genre: genre || 'Unknown',
             emotion: emotion || 'Unknown',
-            file: `/songs/${title.replace(/\s+/g, '_')}.mp3`, // Mock file path
-            image: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
-            albumArt: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
-            artistImage: req.files.artistImage ? `/artistpic/${artist.replace(/\s+/g, '_')}.jpg` : '/artistpic/default.jpg',
-            uploadDate: new Date()
+            file: `/songs/${title.replace(/\s+/g, '_')}${fileExtension}`, // Use correct extension
+            art: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
+            artistart: req.files.artistImage ? `/artistpic/${artist.replace(/\s+/g, '_')}.jpg` : '/artistpic/default.jpg',
+            uploaddate: new Date()
         });
 
         await song.save();
