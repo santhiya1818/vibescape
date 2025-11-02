@@ -180,7 +180,6 @@
       <p>Share your thoughts, feedback, and experiences about your favourite music.</p>
 
       <form class="comment-form" id="commentForm">
-        <input type="text" id="username" placeholder="Your Name (Optional)" />
         <textarea id="commentText" rows="4" placeholder="Write your comment..." required></textarea>
         <button type="submit">Post Comment</button>
       </form>
@@ -197,6 +196,13 @@
   </footer>
 
   <script>
+    // Check authentication on page load
+    const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
+    if (!token) {
+      alert('Please login to access comments.');
+      window.location.href = 'login.html';
+    }
+
     const profileImg = document.getElementById("profile-img");
     const profileDropdown = document.getElementById("profile-dropdown");
 
@@ -247,15 +253,34 @@
     // Save comment to database
     async function saveComment(username, text) {
       try {
+        // Get authentication token from storage
+        const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
+        
+        if (!token) {
+          alert('Please login to post comments.');
+          window.location.href = 'login.html';
+          return;
+        }
+        
         const response = await fetch('/api/comments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ username, text })
+          body: JSON.stringify({ text }) // Only send text since username comes from token
         });
 
-        if (!response.ok) throw new Error('Failed to save comment');
+        if (response.status === 401) {
+          alert('Your session has expired. Please login again.');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || 'Failed to save comment');
+        }
         
         await loadComments(); // Reload comments to show the new one
       } catch (error) {
@@ -284,12 +309,23 @@
 
     commentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const username = document.getElementById("username").value.trim() || "Anonymous";
       const text = document.getElementById("commentText").value.trim();
-      if (text) {
-        await saveComment(username, text);
-        commentForm.reset();
+      
+      if (!text) {
+        alert('Please enter a comment before posting.');
+        return;
       }
+      
+      // Check if user is logged in before attempting to post
+      const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
+      if (!token) {
+        alert('Please login to post comments.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      await saveComment('', text); // Username will come from the token on server side
+      commentForm.reset();
     });
 
     // Theme toggle functionality with localStorage sync
