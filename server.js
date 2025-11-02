@@ -596,10 +596,18 @@ app.get('/api/favorites', async (req, res) => {
 
 // ===== PLAYLIST ENDPOINTS =====
 
+// Test endpoint for debugging
+app.get('/api/test', (req, res) => {
+    console.log('🧪 Test endpoint hit');
+    res.json({ message: 'Playlist endpoints are available', timestamp: new Date() });
+});
+
 // Get user playlists
 app.get('/api/playlists', async (req, res) => {
+    console.log('📋 GET /api/playlists endpoint hit');
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
+        console.log('🔑 Token received:', token ? 'Yes' : 'No');
         if (!token) {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
@@ -616,8 +624,10 @@ app.get('/api/playlists', async (req, res) => {
 
 // Create new playlist
 app.post('/api/playlists', async (req, res) => {
+    console.log('📋 POST /api/playlists endpoint hit');
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
+        console.log('🔑 Token received:', token ? 'Yes' : 'No');
         if (!token) {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
