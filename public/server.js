@@ -12,9 +12,15 @@ const app = express();
 // Middleware
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? ['https://vibescape.onrender.com', 'https://vibescape-jmss.onrender.com'] 
+        ? [
+            'https://vibescape.onrender.com', 
+            'https://vibescape-jmss.onrender.com',
+            'https://vibescape-d28l.onrender.com'  // Add your actual Render URL here
+          ] 
         : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
@@ -58,7 +64,11 @@ const songSchema = new mongoose.Schema({
     title: { type: String, required: true },
     artist: { type: String, required: true },
     file: { type: String, required: true },
+    genre: { type: String, default: 'Unknown' },
     image: String,
+    albumArt: String,
+    artistImage: String,
+    uploadDate: { type: Date, default: Date.now },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -256,11 +266,25 @@ app.post('/api/auth/login', async (req, res) => {
 // Songs API
 app.get('/api/songs', async (req, res) => {
     try {
+        // Check if MongoDB is connected
+        if (!mongoConnected || mongoose.connection.readyState !== 1) {
+            console.error('MongoDB not connected. Ready state:', mongoose.connection.readyState);
+            return res.status(503).json({ 
+                error: 'Database not available. Please try again later.',
+                status: 'database_disconnected'
+            });
+        }
+
         const songs = await Song.find().sort({ createdAt: -1 });
+        console.log(`Successfully fetched ${songs.length} songs`);
         res.json(songs);
     } catch (error) {
         console.error('Error fetching songs:', error);
-        res.status(500).json({ error: 'Failed to fetch songs' });
+        res.status(500).json({ 
+            error: 'Failed to fetch songs', 
+            details: error.message,
+            status: 'fetch_error'
+        });
     }
 });
 
@@ -287,8 +311,12 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
         const song = new Song({
             title,
             artist,
+            genre: genre || 'Unknown',
             file: `/songs/${title.replace(/\s+/g, '_')}.mp3`, // Mock file path
-            image: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg'
+            image: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
+            albumArt: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
+            artistImage: req.files.artistImage ? `/artistpic/${artist.replace(/\s+/g, '_')}.jpg` : '/artistpic/default.jpg',
+            uploadDate: new Date()
         });
 
         await song.save();
@@ -769,6 +797,46 @@ app.get('/api/admin/verify', authenticateToken, requireAdmin, (req, res) => {
     res.json({ message: 'Admin access verified', user: req.user });
 });
 
+// Health check endpoint for debugging deployment issues
+app.get('/api/health', async (req, res) => {
+    const health = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        mongodb: {
+            connected: mongoConnected,
+            readyState: mongoose.connection.readyState,
+            host: mongoose.connection.host,
+            name: mongoose.connection.name
+        },
+        environment: {
+            nodeEnv: process.env.NODE_ENV,
+            port: process.env.PORT || 3000
+        }
+    };
+
+    try {
+        // Try to count songs to test database connection
+        const songCount = await Song.countDocuments();
+        health.mongodb.songCount = songCount;
+        health.status = 'healthy';
+    } catch (error) {
+        health.status = 'unhealthy';
+        health.mongodb.error = error.message;
+    }
+
+    res.json(health);
+});
+
+// Test endpoint to debug API access
+app.get('/api/test', (req, res) => {
+    res.json({ 
+        message: 'API is working', 
+        timestamp: new Date().toISOString(),
+        headers: req.headers 
+    });
+});
+
 // Serve static files and handle client-side routing
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -798,7 +866,32 @@ const PORT = process.env.PORT || 3000;
 // Create admin user and start server
 createAdminUser().then(() => {
     app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log(`Visit: http://localhost:${PORT}`);
+        console.log('🎵 VibeScape Server Started Successfully!');
+        console.log('='.repeat(50));
+        console.log(`📍 Server running on port ${PORT}`);
+        console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`🗄️  MongoDB Status: ${mongoConnected ? 'Connected ✅' : 'Disconnected ❌'}`);
+        console.log(`🔑 JWT Secret: ${JWT_SECRET ? 'Configured ✅' : 'Using fallback ⚠️'}`);
+        console.log(`👤 Admin User: ${process.env.ADMIN_USERNAME || 'admin'}`);
+        console.log('='.repeat(50));
+        
+        if (process.env.NODE_ENV === 'production') {
+            console.log(`🚀 Production URL: Visit your Render app URL`);
+            console.log(`🔧 Admin Panel: /admin.html`);
+        } else {
+            console.log(`🏠 Local URL: http://localhost:${PORT}`);
+            console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin.html`);
+        }
+        
+        // Log environment variables (safely)
+        console.log('\n📋 Environment Check:');
+        console.log(`- NODE_ENV: ${process.env.NODE_ENV || 'Not set'}`);
+        console.log(`- PORT: ${process.env.PORT || 'Not set (using default 3000)'}`);
+        console.log(`- MONGODB_URI: ${process.env.MONGODB_URI ? 'Set ✅' : 'Not set (using fallback) ⚠️'}`);
+        console.log(`- JWT_SECRET: ${process.env.JWT_SECRET ? 'Set ✅' : 'Not set (using fallback) ⚠️'}`);
+        console.log('='.repeat(50));
     });
+}).catch(error => {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
 });

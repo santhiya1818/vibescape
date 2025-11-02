@@ -172,6 +172,10 @@
             const token = sessionStorage.getItem('vibescape-token');
             const role = sessionStorage.getItem('vibescape-role');
             
+            console.log('Verifying admin access...');
+            console.log('Token exists:', !!token);
+            console.log('Role:', role);
+            
             // Check if user has token and admin role
             if (!token || role !== 'admin') {
                 alert('Access denied. Admin credentials required.');
@@ -181,24 +185,30 @@
             
             // Verify with server
             try {
+                console.log('Verifying with server...');
                 const response = await fetch('/api/admin/verify', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 
+                console.log('Server verification response status:', response.status);
+                
                 if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('Server verification failed:', errorData);
                     alert('Admin verification failed. Please login again.');
                     sessionStorage.clear();
                     window.location.href = '/login.html';
                     return false;
                 }
                 
+                const result = await response.json();
+                console.log('Admin verification successful:', result);
                 return true;
             } catch (error) {
                 console.error('Admin verification error:', error);
-                alert('Unable to verify admin access. Please login again.');
-                window.location.href = '/login.html';
+                alert('Unable to verify admin access. Please check your connection and try again.');
                 return false;
             }
         }
@@ -259,24 +269,34 @@
         // Global loadSongs function
         async function loadSongs() {
             try {
+                console.log('Loading songs from API...');
                 const response = await fetch('/api/songs');
+                console.log('API response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const songs = await response.json();
+                console.log('Songs loaded:', songs.length);
+                
                 const songsList = document.getElementById('songsList');
                 if (songs.length === 0) {
-                    songsList.innerHTML = '<div class="loading">No songs found.</div>';
+                    songsList.innerHTML = '<div class="loading">No songs found. Upload some songs to get started!</div>';
                     updateStats([]);
                     return;
                 }
                 songsList.innerHTML = '';
                 songs.forEach(song => {
-                    const uploadDate = new Date(song.uploadDate).toLocaleString();
+                    const uploadDate = song.uploadDate ? new Date(song.uploadDate).toLocaleString() : 
+                                     song.createdAt ? new Date(song.createdAt).toLocaleString() : 'Unknown';
                     const songItem = document.createElement('div');
                     songItem.className = 'song-item';
                     
                     songItem.innerHTML = `
                         <div class="song-details">
-                            <h4><i class="fa-solid fa-music"></i> ${song.title}</h4>
-                            <p><i class="fa-solid fa-user"></i> <strong>Artist:</strong> ${song.artist}</p>
+                            <h4><i class="fa-solid fa-music"></i> ${song.title || 'Unknown Title'}</h4>
+                            <p><i class="fa-solid fa-user"></i> <strong>Artist:</strong> ${song.artist || 'Unknown Artist'}</p>
                             <p><i class="fa-solid fa-tags"></i> <strong>Genre:</strong> ${song.genre || 'Unknown'}</p>
                             <p><i class="fa-solid fa-calendar"></i> <strong>Uploaded:</strong> ${uploadDate}</p>
                         </div>
@@ -290,8 +310,17 @@
                 });
                 updateStats(songs);
             } catch (error) {
+                console.error('Load songs error:', error);
+                const errorMessage = error.message.includes('fetch') ? 
+                    'Network error: Cannot connect to server. Check if the server is running.' :
+                    `Error loading songs: ${error.message}`;
+                    
                 document.getElementById('songsList').innerHTML = 
-                    '<div class="loading error"><i class="fa-solid fa-exclamation-triangle"></i> Error loading songs. Is the server running?</div>';
+                    `<div class="loading error">
+                        <i class="fa-solid fa-exclamation-triangle"></i> 
+                        ${errorMessage}
+                        <br><small>Check the browser console for more details.</small>
+                    </div>`;
             }
         }
 
