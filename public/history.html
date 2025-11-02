@@ -1229,6 +1229,9 @@
     <audio id="global-audio" preload="metadata"></audio>
   </div>
 
+  <!-- Load common functionality first -->
+  <script src="common.js"></script>
+
   <!-- *** SCRIPT SECTION HAS BEEN COMPLETELY REPLACED *** -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1776,6 +1779,5 @@
         await loadHistoryFromServer(); // Then, load the user's history from database
     });
   </script>
-  <script src="common.js"></script>
 </body>
 </html>

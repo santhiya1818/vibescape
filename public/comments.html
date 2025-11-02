@@ -195,6 +195,9 @@
     <a href="privacy.html">Privacy Policy</a>
   </footer>
 
+  <!-- Load common functionality first -->
+  <script src="common.js"></script>
+
   <script>
     // Check authentication on page load
     const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
@@ -400,6 +403,5 @@
 
     loadComments();
   </script>
-  <script src="common.js"></script>
 </body>
 </html>

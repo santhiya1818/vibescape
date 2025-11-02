@@ -101,6 +101,9 @@
     <a href="privacy.html">Privacy Policy</a>
   </footer>
 
+  <!-- Load common functionality first -->
+  <script src="common.js"></script>
+  
   <!-- *** SCRIPT SECTION HAS BEEN COMPLETELY REPLACED *** -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -486,7 +489,6 @@
         await buildAndRender(); // Then render the page
     });
   </script>
-  <script src="common.js"></script>
   <script src="history-tracker.js"></script>
 </body>
 </html>
