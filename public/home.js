@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     let songs = []; // This will be filled by the server
 
     // Optimized function to fetch songs with caching and timeout
-    async function loadSongsFromServer() {
+    async function loadSongsFromServer(forceRefresh = false) {
         try {
-            // Check cache first (only if less than 5 minutes old)
+            // Check cache first (only if less than 30 seconds old and not forced refresh)
             const cachedSongs = localStorage.getItem('vibescape-songs-cache');
             const cacheTimestamp = localStorage.getItem('vibescape-songs-timestamp');
             const cacheAge = Date.now() - parseInt(cacheTimestamp || '0');
             
-            if (cachedSongs && cacheAge < 300000) { // 5 minutes
+            if (!forceRefresh && cachedSongs && cacheAge < 30000) { // Reduced to 30 seconds
                 console.log('🚀 Using cached songs data');
                 songs = JSON.parse(cachedSongs);
                 displayAllSongs();
@@ -26,13 +26,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             
+            console.log(forceRefresh ? '🔄 Force refreshing songs...' : '📡 Loading fresh songs from server...');
+            
             // Add timeout to prevent hanging
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
             const response = await fetch('/api/songs', {
                 signal: controller.signal,
-                cache: 'default' // Use browser cache when possible
+                cache: forceRefresh ? 'no-cache' : 'default' // No-cache for force refresh
             });
             
             clearTimeout(timeoutId);
@@ -93,6 +95,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         return false;
     }
     
+    // Global refresh function that can be called from anywhere
+    window.refreshSongs = async function() {
+        console.log('🔄 Manual refresh triggered');
+        try {
+            // Show loading indicator
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'flex';
+                document.body.classList.remove('loaded');
+            }
+            
+            // Force refresh songs
+            await loadSongsFromServer(true);
+            
+            // Hide loading indicator
+            hideLoading();
+            
+            // Show success message briefly
+            const message = document.createElement('div');
+            message.innerHTML = '✅ Songs refreshed!';
+            message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #1db954; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; font-weight: bold;';
+            document.body.appendChild(message);
+            setTimeout(() => document.body.removeChild(message), 2000);
+            
+        } catch (error) {
+            console.error('Manual refresh failed:', error);
+            
+            // Show error message
+            const message = document.createElement('div');
+            message.innerHTML = '❌ Refresh failed!';
+            message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #e74c3c; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; font-weight: bold;';
+            document.body.appendChild(message);
+            setTimeout(() => document.body.removeChild(message), 2000);
+        }
+    };
+    
     function showConnectionError() {
         hideLoading();
         // Show error message to user
@@ -101,10 +139,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="text-align: center; padding: 50px; color: #888;">
                 <h3>🌐 Connection Issue</h3>
                 <p>Having trouble loading songs. Please check your connection and try refreshing.</p>
-                <button onclick="window.location.reload()" 
-                        style="padding: 10px 20px; background: #1db954; border: none; border-radius: 20px; color: white; cursor: pointer;">
-                    Refresh Page
-                </button>
+                <div style="margin-top: 20px;">
+                    <button onclick="refreshSongs()" 
+                            style="padding: 10px 20px; background: #1db954; border: none; border-radius: 20px; color: white; cursor: pointer; margin-right: 10px;">
+                        🔄 Refresh Songs
+                    </button>
+                    <button onclick="window.location.reload()" 
+                            style="padding: 10px 20px; background: #e74c3c; border: none; border-radius: 20px; color: white; cursor: pointer;">
+                        🔄 Refresh Page
+                    </button>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                    💡 Press F5 or Ctrl+R to refresh anytime
+                </p>
             </div>
         `;
         const gridContainer = document.querySelector('.grid-container');
@@ -909,6 +956,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).catch(error => {
         console.error("Failed to load songs:", error);
         showErrorMessage("Failed to load music library. Please check your connection.");
+    });
+    
+    // Add keyboard shortcuts for better UX
+    document.addEventListener('keydown', function(e) {
+        // F5 or Ctrl+R for manual refresh (prevent default and use our refresh)
+        if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+            e.preventDefault();
+            refreshSongs();
+        }
+        
+        // Space for play/pause
+        if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            if (audio.paused) {
+                playSong();
+            } else {
+                pauseSong();
+            }
+        }
     });
     
     // Refresh songs periodically (reduced frequency to improve performance)
