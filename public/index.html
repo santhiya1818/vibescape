@@ -1,67 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VibeScape - Welcome</title>
-<link rel="stylesheet" href="style.css" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-<link rel="icon" href="vibescapelogo.jpg" type="image/jpg" />
-</head>
-<body>
-<button id="theme-toggle" class="theme-toggle">
-    <i class="fa-solid fa-sun"></i>
-</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeScape - Feel the Music</title>
 
-<main class="main-content">
-    <div class="login-container">
-        <div class="logo-header">
-            <div class="sound-bars">
-                <span></span><span></span><span></span><span></span>
-            </div>
-            <img src="vibescapelogo.jpg" alt="VibeScape Logo" class="logo-image" />
-            <h1>VibeScape</h1>
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="icon" href="vibescapelogo.jpg" type="image/jpg" />
+
+    <style>
+      /* 🌈 Vibrant VibeScape Style */
+
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background-color: #0e0e10;
+        color: #fff;
+        overflow-x: hidden;
+      }
+
+      /* Animated Gradient Background */
+      .hero {
+        position: relative;
+        height: 100vh;
+        background: linear-gradient(135deg, #6c63ff, #ff0080, #00eaff, #ff9a00);
+        background-size: 400% 400%;
+        animation: gradientMove 12s ease infinite;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: center;
+        color: #fff;
+        overflow: hidden;
+      }
+
+      @keyframes gradientMove {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Overlay image for extra style */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: url("music-bg.jpeg") center/cover no-repeat;
+        opacity: 0.2;
+        z-index: 1;
+      }
+
+      /* Navbar */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 60px;
+        z-index: 3;
+        position: relative;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo img {
+        width: 55px;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #fff;
+        animation: pulse 3s infinite ease-in-out;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 30px;
+      }
+
+      .nav-links a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 500;
+        transition: 0.3s;
+        position: relative;
+      }
+
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #00eaff;
+        transition: 0.3s;
+      }
+
+      .nav-links a:hover::after {
+        width: 100%;
+      }
+
+      .nav-links a:hover {
+        color: #00eaff;
+      }
+
+      /* Hero Content */
+      .hero-content {
+        position: relative;
+        z-index: 3;
+        margin-top: 8vh;
+        animation: fadeIn 2s ease;
+      }
+
+      /* 🎵 Hero Image Added */
+      .hero-img {
+        width: 260px;
+        border-radius: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 0 35px rgba(255, 0, 128, 0.6);
+        animation: float 4s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+
+      .hero-content h2 {
+        font-size: 3.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      }
+
+      .hero-content p {
+        font-size: 1.3rem;
+        margin-bottom: 40px;
+        font-style: italic;
+        color: #f0f0f0;
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 14px 30px;
+        border: none;
+        cursor: pointer;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: 0.3s;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      }
+
+      .btn-primary {
+        background: linear-gradient(90deg, #ff0080, #6c63ff);
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        box-shadow: 0 0 25px #ff0080;
+        transform: scale(1.05);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        border: 2px solid #00eaff;
+        color: #00eaff;
+      }
+
+      .btn-secondary:hover {
+        background: #00eaff;
+        color: #000;
+        box-shadow: 0 0 25px #00eaff;
+      }
+
+      /* 🌆 Music Banner Section */
+      .banner {
+        position: relative;
+        height: 60vh;
+        background: url("music-banner.jpg") center/cover no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .banner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .banner-text {
+        position: relative;
+        color: #fff;
+        z-index: 2;
+        text-align: center;
+        animation: fadeIn 2s ease;
+      }
+
+      .banner-text h2 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 0 15px #00eaff;
+      }
+
+      .banner-text p {
+        font-size: 1.2rem;
+        color: #f5f5f5;
+        font-style: italic;
+      }
+
+      /* Quotes Section */
+      .quotes-section {
+        padding: 80px 20px;
+        background: radial-gradient(circle, #121212, #0a0a0a);
+        text-align: center;
+      }
+
+      .quotes-section h2 {
+        margin-bottom: 40px;
+        color: #ff9a00;
+        font-weight: 600;
+        text-shadow: 0 0 10px rgba(255, 154, 0, 0.5);
+      }
+
+      .quotes-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+      }
+
+      .quote-card {
+        background: #1a1a1d;
+        padding: 30px;
+        border-radius: 20px;
+        width: 300px;
+        box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+        transition: 0.4s;
+        backdrop-filter: blur(10px);
+      }
+
+      .quote-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 0 30px rgba(0, 234, 255, 0.5);
+      }
+
+      .quote-card i {
+        font-size: 2.5rem;
+        color: #ff0080;
+        margin-bottom: 15px;
+      }
+
+      /* About */
+      .about-section {
+        padding: 70px 20px;
+        background: linear-gradient(to right, #1b0034, #000);
+        text-align: center;
+        color: #eee;
+      }
+
+      .about-section h2 {
+        color: #00eaff;
+        margin-bottom: 20px;
+      }
+
+      .about-section p {
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.7;
+        font-size: 1.1rem;
+      }
+
+      /* Footer */
+      .footer {
+        background: #050505;
+        padding: 25px;
+        text-align: center;
+        font-size: 0.95rem;
+        color: #ccc;
+      }
+
+      .footer .socials a {
+        color: #00eaff;
+        margin: 0 12px;
+        transition: 0.3s;
+      }
+
+      .footer .socials a:hover {
+        color: #ff0080;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(90deg, #ff0080, #6c63ff);
+        border: none;
+        color: #fff;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        z-index: 10;
+        font-size: 1.3rem;
+        box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+        transition: 0.3s;
+      }
+
+      .theme-toggle:hover {
+        transform: rotate(15deg);
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .hero-content h2 {
+          font-size: 2.2rem;
+        }
+        .navbar {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .nav-links {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .banner-text h2 {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle">
+      <i class="fa-solid fa-sun"></i>
+    </button>
+
+    <!-- Hero Section -->
+    <header class="hero">
+      <div class="overlay"></div>
+      <nav class="navbar">
+        <div class="logo">
+          <img src="vibescapelogo.jpg" alt="VibeScape Logo" />
+          <h1>VibeScape</h1>
         </div>
+        <ul class="nav-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="login.html">Login</a></li>
+          <li><a href="signup.html" class="btn-primary">Get Started</a></li>
+        </ul>
+      </nav>
 
-        <form id="login-form">
-            <h2>Login to Your Account</h2>
-            
-            <div class="input-group">
-                <label for="email">Email</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    placeholder="you@example.com" 
-                    required
-                >
-            </div>
+      <div class="hero-content">
+        <!-- 🌟 Added Image -->
+        <img src="music-hero.jpg" alt="VibeScape Music" class="hero-img" />
 
-            <div class="input-group">
-                    <label for="password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" name="password" placeholder="Create a password" required>
-                        <i class="fa-solid fa-eye password-toggle" data-target="password"></i>
-                    </div>
-                </div>
+        <h2>Feel the Rhythm.<br />Live the Moment.</h2>
+        <p>"Let the music take you where words can’t."</p>
+        <a href="signup.html" class="btn btn-primary">Join the Vibe</a>
+        <a href="#quotes" class="btn btn-secondary">Discover More</a>
+      </div>
+    </header>
 
-            <button type="submit" class="btn btn-primary">Login</button>
+    <!-- 🌆 New Image Banner -->
+    <section class="banner">
+      <div class="banner-text">
+        <h2>Where Beats Meet Soul</h2>
+        <p>Immerse yourself in a symphony of colors, rhythm, and emotion.</p>
+      </div>
+    </section>
 
-            <p class="signup-link">
-                Don’t have an account? <a href="signup.html">Sign up here</a>
-            </p>
-        </form>
-    </div>
-</main>
+    <!-- Quote Section -->
+    <section id="quotes" class="quotes-section">
+      <h2>What VibeScape Stands For</h2>
+      <div class="quotes-grid">
+        <div class="quote-card">
+          <i class="fa-solid fa-headphones-simple"></i>
+          <p>"Lose yourself in sound, find yourself in rhythm."</p>
+        </div>
+        <div class="quote-card">
+          <i class="fa-solid fa-music"></i>
+          <p>"Every beat tells a story. Every playlist paints a feeling."</p>
+        </div>
+        <div class="quote-card">
+          <i class="fa-solid fa-heart"></i>
+          <p>"Built with passion by music lovers, for music lovers."</p>
+        </div>
+      </div>
+    </section>
 
-<footer id="about-us" class="about-section">
-    <h2>About VibeScape</h2>
-    <p>VibeScape is your personal gateway to a world of sound. We believe that music is more than just a background noise; it's an experience. Our mission is to provide a seamless, beautiful, and intuitive platform for you to discover new artists, create perfect playlists, and lose yourself in the music. Built with passion by music lovers, for music lovers. Welcome to the future of listening.</p>
-</footer>
+    <!-- About Section -->
+    <section id="about" class="about-section">
+      <h2>About VibeScape</h2>
+      <p>
+        VibeScape is your personal gateway to the world of music. Explore new
+        artists, craft playlists that match your mood, and experience sound like
+        never before. Let every beat spark your emotions — because your vibe
+        deserves the perfect soundscape.
+      </p>
+    </section>
 
-<script src="script.js"></script>
-</body>
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2025 VibeScape — Feel the Vibe. Live the Sound.</p>
+      <div class="socials">
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#"><i class="fa-brands fa-spotify"></i></a>
+      </div>
+    </footer>
+
+    <!-- Include unified scripts -->
+    <script src="script.js"></script>
+  </body>
 </html>
