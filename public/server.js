@@ -12,7 +12,7 @@ const app = express();
 // Middleware
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? ['https://vibescape-jmss.onrender.com'] 
+        ? ['https://vibescape.onrender.com', 'https://vibescape-jmss.onrender.com'] 
         : ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true
 }));
@@ -49,6 +49,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, default: 'user', enum: ['user', 'admin'] },
+    profilePic: { type: String }, // Base64 encoded image data
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -616,6 +617,142 @@ app.delete('/api/favorites', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error removing from favorites:', error);
         res.status(500).json({ error: 'Failed to remove from favorites.' });
+    }
+});
+
+// User Profile endpoints
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+});
+
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+    try {
+        const { username, email } = req.body;
+        
+        if (!username || !email) {
+            return res.status(400).json({ error: 'Username and email are required' });
+        }
+
+        // Check if username or email already exists (excluding current user)
+        const existingUser = await User.findOne({
+            $and: [
+                { _id: { $ne: req.user.userId } },
+                { $or: [{ username }, { email }] }
+            ]
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ 
+                error: existingUser.username === username ? 
+                    'Username already exists' : 'Email already exists' 
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            { username, email },
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        res.json(updatedUser);
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// Profile picture upload setup
+const profilePicUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'), false);
+        }
+    }
+});
+
+app.post('/api/user/profile-picture', authenticateToken, profilePicUpload.single('profilePic'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
+        // Convert image to base64 for database storage
+        const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            { profilePic: base64Image },
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        res.json({ profilePic: updatedUser.profilePic });
+    } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        res.status(500).json({ error: 'Failed to upload profile picture' });
+    }
+});
+
+app.delete('/api/user/profile-picture', authenticateToken, async (req, res) => {
+    try {
+        await User.findByIdAndUpdate(
+            req.user.userId,
+            { $unset: { profilePic: 1 } }
+        );
+
+        res.json({ message: 'Profile picture removed successfully' });
+    } catch (error) {
+        console.error('Error removing profile picture:', error);
+        res.status(500).json({ error: 'Failed to remove profile picture' });
+    }
+});
+
+app.put('/api/user/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current password and new password are required' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+        }
+
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Verify current password
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!isValidPassword) {
+            return res.status(400).json({ error: 'Current password is incorrect' });
+        }
+
+        // Hash new password
+        const saltRounds = 10;
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Update password
+        await User.findByIdAndUpdate(req.user.userId, { password: hashedNewPassword });
+
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ error: 'Failed to change password' });
     }
 });
 

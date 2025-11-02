@@ -1,249 +1,246 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- TAB SWITCHING LOGIC ---
-    const tabLinks = document.querySelectorAll('.tab-link');
-    const tabPanes = document.querySelectorAll('.tab-pane');
-
-    tabLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const tabId = link.getAttribute('data-tab');
-
-            // Update active state on tab links
-            tabLinks.forEach(item => item.classList.remove('active'));
-            link.classList.add('active');
-
-            // Show the correct tab pane
-            tabPanes.forEach(pane => {
-                if (pane.id === tabId) {
-                    pane.classList.add('active');
-                } else {
-                    pane.classList.remove('active');
-                }
-            });
-        });
-    });
-
     // --- AUTHENTICATION & INITIALIZATION ---
-    const token = localStorage.getItem('vibescape-token');
+    const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
     if (!token) {
-        window.location.href = '/index.html'; // Redirect if not logged in
+        alert('Please login to access settings.');
+        window.location.href = '/login.html';
         return;
     }
 
-    // --- DOM Elements ---
+    // --- DOM ELEMENTS ---
     const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
-    const profileImgHeader = document.getElementById('profile-img-header');
     const profilePicPreview = document.getElementById('profile-pic-preview');
     const profilePicUpload = document.getElementById('profile-pic-upload');
+    const uploadPicBtn = document.getElementById('upload-pic-btn');
     const removePicBtn = document.getElementById('remove-pic-btn');
-
     const profileForm = document.getElementById('profile-form');
     const passwordForm = document.getElementById('password-form');
-    
-    // Toggles
-    const autoplayToggle = document.getElementById('autoplay-toggle');
-    const canvasToggle = document.getElementById('canvas-toggle');
-    const publicPlaylistsToggle = document.getElementById('public-playlists-toggle');
-
-    // Danger Zone
-    const clearHistoryBtn = document.getElementById('clear-history-btn');
-    const deleteAccountBtn = document.getElementById('delete-account-btn');
-
-    // Modal
-    const modal = document.getElementById('confirmation-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalText = document.getElementById('modal-text');
-    const modalCancelBtn = document.getElementById('modal-cancel-btn');
-    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+    const logoutBtn = document.getElementById('logout-btn');
 
     // --- API HELPER FUNCTION ---
     const fetchAPI = async (url, options = {}) => {
-        const headers = {
+        const headers = { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            ...options.headers,
+            ...options.headers 
         };
-        const response = await fetch(url, { ...options, headers });
-        if (response.status === 401) { // If token is expired or invalid
-            handleLogout();
-            throw new Error('Unauthorized');
+        
+        try {
+            const response = await fetch(url, { ...options, headers });
+            
+            if (response.status === 401) {
+                alert('Your session has expired. Please login again.');
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/login.html';
+                return null;
+            }
+            
+            return response;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
         }
-        return response;
     };
 
-    // --- PROFILE PICTURE LOGIC ---
-    profilePicUpload.addEventListener('change', () => {
-        const file = profilePicUpload.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const newPicUrl = e.target.result;
-                profilePicPreview.src = newPicUrl;
-                // In a real app, you would now enable a "Save" button and
-                // upload this file data to the server.
-                console.log("Image ready for upload.");
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    removePicBtn.addEventListener('click', () => {
-        const defaultPic = 'https://via.placeholder.com/150';
-        profilePicPreview.src = defaultPic;
-        profilePicUpload.value = ''; // Clear the selected file
-    });
-
-    // --- PLAYBACK & PRIVACY SETTINGS LOGIC ---
-    const settings = {
-        autoplay: true,
-        showCanvas: true,
-        publicPlaylists: true
-    };
-
-    const saveSettings = () => {
-        localStorage.setItem('vibescape-settings', JSON.stringify(settings));
-        console.log("Settings saved:", settings);
-    };
-
-    const loadSettings = () => {
-        const saved = JSON.parse(localStorage.getItem('vibescape-settings'));
-        if (saved) {
-            Object.assign(settings, saved);
-        }
-        // Sync toggles with loaded settings
-        autoplayToggle.checked = settings.autoplay;
-        canvasToggle.checked = settings.showCanvas;
-        publicPlaylistsToggle.checked = settings.publicPlaylists;
-    };
-
-    autoplayToggle.addEventListener('change', () => { settings.autoplay = autoplayToggle.checked; saveSettings(); });
-    canvasToggle.addEventListener('change', () => { settings.showCanvas = canvasToggle.checked; saveSettings(); });
-    publicPlaylistsToggle.addEventListener('change', () => { settings.publicPlaylists = publicPlaylistsToggle.checked; saveSettings(); });
-
-    // --- DATA LOADING & FORM SUBMISSIONS ---
+    // --- LOAD USER DATA ---
     const loadUserData = async () => {
         try {
             const response = await fetchAPI('/api/user/profile');
-            if (!response.ok) throw new Error('Failed to fetch user data.');
+            if (!response || !response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
             
             const user = await response.json();
-            usernameInput.value = user.username;
-            emailInput.value = user.email;
+            usernameInput.value = user.username || '';
+            emailInput.value = user.email || '';
             
-            // Assuming user.profilePic is a field in your schema
-            // profileImgHeader.src = user.profilePic || 'https://via.placeholder.com/40';
-            // profilePicPreview.src = user.profilePic || 'https://via.placeholder.com/150';
+            // Load profile picture if exists
+            if (user.profilePic) {
+                profilePicPreview.src = user.profilePic;
+            }
+            
         } catch (error) {
             console.error('Error loading user data:', error);
-            if (error.message === 'Unauthorized') {
-                 alert('Your session has expired. Please log in again.');
-            }
+            alert('Failed to load user data. Please refresh the page.');
         }
     };
-    
+
+    // --- PROFILE PICTURE FUNCTIONALITY ---
+    uploadPicBtn.addEventListener('click', () => {
+        profilePicUpload.click();
+    });
+
+    profilePicUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            return;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB.');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('profilePic', file);
+
+            const response = await fetch('/api/user/profile-picture', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                profilePicPreview.src = result.profilePic;
+                alert('Profile picture updated successfully!');
+            } else {
+                throw new Error('Failed to upload profile picture');
+            }
+        } catch (error) {
+            console.error('Error uploading profile picture:', error);
+            alert('Failed to upload profile picture. Please try again.');
+        }
+    });
+
+    removePicBtn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to remove your profile picture?')) {
+            return;
+        }
+
+        try {
+            const response = await fetchAPI('/api/user/profile-picture', {
+                method: 'DELETE'
+            });
+
+            if (response && response.ok) {
+                profilePicPreview.src = 'https://via.placeholder.com/120x120?text=No+Image';
+                alert('Profile picture removed successfully!');
+            } else {
+                throw new Error('Failed to remove profile picture');
+            }
+        } catch (error) {
+            console.error('Error removing profile picture:', error);
+            alert('Failed to remove profile picture. Please try again.');
+        }
+    });
+
+    // --- PROFILE FORM SUBMISSION ---
     profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        // NOTE: Full implementation would require FormData for image uploads.
-        // This example saves text fields only.
+        
         const updatedData = {
-            username: usernameInput.value,
-            email: emailInput.value,
+            username: usernameInput.value.trim(),
+            email: emailInput.value.trim()
         };
+
+        if (!updatedData.username || !updatedData.email) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
         try {
             const response = await fetchAPI('/api/user/profile', {
                 method: 'PUT',
                 body: JSON.stringify(updatedData)
             });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error);
-            alert(result.message);
+
+            if (response && response.ok) {
+                alert('Profile updated successfully!');
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Failed to update profile.');
+            }
         } catch (error) {
-            alert(`Error updating profile: ${error.message}`);
+            console.error('Error updating profile:', error);
+            alert('Failed to update profile. Please try again.');
         }
     });
 
+    // --- PASSWORD FORM SUBMISSION ---
     passwordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const currentPassword = document.getElementById('current-password').value;
         const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Please fill in all password fields.');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('New password and confirmation do not match.');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alert('New password must be at least 6 characters long.');
+            return;
+        }
+
         try {
             const response = await fetchAPI('/api/user/change-password', {
                 method: 'PUT',
-                body: JSON.stringify({ currentPassword, newPassword })
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                })
             });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error);
-            alert(result.message);
-            passwordForm.reset();
+
+            if (response && response.ok) {
+                alert('Password changed successfully!');
+                passwordForm.reset();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Failed to change password.');
+            }
         } catch (error) {
-            alert(`Error changing password: ${error.message}`);
+            console.error('Error changing password:', error);
+            alert('Failed to change password. Please try again.');
         }
     });
 
-    // --- MODAL AND DANGER ZONE LOGIC ---
-    let confirmAction = null; // A variable to hold the function to run on confirmation
+    // --- PASSWORD VISIBILITY TOGGLES ---
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const input = document.getElementById(button.dataset.target);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
 
-    const openModal = (title, text, action) => {
-        modalTitle.textContent = title;
-        modalText.textContent = text;
-        confirmAction = action; // Set the function to be executed
-        modal.style.display = 'flex';
-    };
-
-    const closeModal = () => {
-        modal.style.display = 'none';
-        confirmAction = null; // Clear the action
-    };
-
-    modalCancelBtn.addEventListener('click', closeModal);
-    modalConfirmBtn.addEventListener('click', () => {
-        if (typeof confirmAction === 'function') {
-            confirmAction(); // Execute the stored function
+    // --- LOGOUT FUNCTIONALITY ---
+    logoutBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/login.html';
         }
-        closeModal();
     });
 
-    clearHistoryBtn.addEventListener('click', () => {
-        openModal(
-            'Clear Listening History?',
-            'This will permanently delete all your listening data. This action cannot be undone.',
-            () => {
-                // This is where you would make the API call to the backend
-                console.log("Executing action: Clear History");
-                // await fetchAPI('/api/user/history', { method: 'DELETE' });
-                alert("Listening history has been cleared. (Simulated)");
-            }
-        );
-    });
-    
-    deleteAccountBtn.addEventListener('click', () => {
-        openModal(
-            'Delete Your Account?',
-            'Your account, playlists, and all data will be permanently erased. Are you absolutely sure?',
-            () => {
-                // This is where you would make the API call to the backend
-                console.log("Executing action: Delete Account");
-                // await fetchAPI('/api/user/account', { method: 'DELETE' });
-                alert("Account deleted. Logging you out. (Simulated)");
-                handleLogout();
-            }
-        );
-    });
-
-    // --- LOGOUT FUNCTION ---
-    const handleLogout = () => {
-        localStorage.clear(); // Clears token, user settings, etc.
-        window.location.href = '/index.html';
-    };
-    
-    // Attach logout to the header link
-    const logoutLink = document.getElementById('logout-link');
-    logoutLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        handleLogout();
-    });
-
-    // --- INITIAL PAGE LOAD ---
+    // --- INITIALIZE ---
     loadUserData();
-    loadSettings();
+
 });
