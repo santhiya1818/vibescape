@@ -692,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Optimized: Build all HTML at once
         const trackCardsHTML = songsByArtist.map(song => `
-            <div class="track-card" data-title="${song.title}">
+            <div class="track-card" data-title="${song.title}" data-artist="${song.artist}">
                 <img src="${song.art}" alt="${song.title}" class="track-card-art">
                 <div class="track-card-info">
                     <div class="track-card-title">${song.title}</div>
@@ -724,7 +724,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (songsInGenre.length > 0) {
             // Optimized: Build all HTML at once
             const trackCardsHTML = songsInGenre.map(song => `
-                <div class="track-card" data-title="${song.title}">
+                <div class="track-card" data-title="${song.title}" data-artist="${song.artist}">
                   <img src="${song.art}" alt="${song.title}" class="track-card-art">
                   <div class="track-card-info">
                     <div class="track-card-title">${song.title}</div>
@@ -762,7 +762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .map(songTitle => {
                 const songData = songs.find(s => s.title === songTitle);
                 return songData ? `
-                    <div class="track-card" data-title="${songData.title}">
+                    <div class="track-card" data-title="${songData.title}" data-artist="${songData.artist}">
                       <img src="${songData.art}" alt="${songData.title}" class="track-card-art">
                       <div class="track-card-info">
                           <div class="track-card-title">${songData.title}</div>
