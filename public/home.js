@@ -182,7 +182,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     async function savePlaylistToServer(playlistName, songs) {
+        console.log('💾 savePlaylistToServer called:', playlistName, songs);
         const token = sessionStorage.getItem('vibescape-token');
+        console.log('🔑 Token exists:', !!token);
         if (!token) {
             alert('Please login to save playlists');
             return false;
@@ -226,7 +228,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     async function selectPlaylistAndAdd(songTitle) {
+        console.log('🎵 selectPlaylistAndAdd called with:', songTitle);
         let playlists = await getPlaylists();
+        console.log('📋 Retrieved playlists:', playlists);
         let playlistNames = Object.keys(playlists);
         let playlist = prompt(
             playlistNames.length > 0
@@ -238,9 +242,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Get current songs for this playlist
         let currentSongs = playlists[playlist] ? playlists[playlist].songs || [] : [];
+        console.log('🎵 Current songs in playlist:', currentSongs);
         
         if (!currentSongs.includes(songTitle)) {
             currentSongs.push(songTitle);
+            console.log('💾 Saving playlist to server:', playlist, currentSongs);
             const success = await savePlaylistToServer(playlist, currentSongs);
             if (success) {
                 alert(`Added "${songTitle}" to playlist "${playlist}".`);
@@ -715,8 +721,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.menu-options').forEach(m => m.style.display = 'none');
         }
         if (e.target.matches('.add-to-playlist')) {
+            console.log('🎯 Add to Playlist clicked!');
             e.stopPropagation();
             const songTitle = e.target.closest('.track-card').getAttribute('data-title');
+            console.log('🎵 Song title:', songTitle);
             selectPlaylistAndAdd(songTitle);
             e.target.parentElement.style.display = 'none';
         } else if (e.target.matches('.add-to-favourites')) {
