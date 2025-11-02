@@ -103,6 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const result = await response.json();
                 profilePicPreview.src = result.profilePic;
+                
+                // Also update header profile picture if present
+                const headerProfileImg = document.getElementById('profile-img');
+                if (headerProfileImg) {
+                    headerProfileImg.src = result.profilePic;
+                }
+                
                 alert('Profile picture updated successfully!');
             } else {
                 throw new Error('Failed to upload profile picture');
@@ -125,6 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response && response.ok) {
                 profilePicPreview.src = 'https://via.placeholder.com/120x120?text=No+Image';
+                
+                // Also update header profile picture if present
+                const headerProfileImg = document.getElementById('profile-img');
+                if (headerProfileImg) {
+                    headerProfileImg.src = 'https://via.placeholder.com/40x40?text=No+Image';
+                }
+                
                 alert('Profile picture removed successfully!');
             } else {
                 throw new Error('Failed to remove profile picture');
