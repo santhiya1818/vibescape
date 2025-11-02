@@ -613,8 +613,10 @@ app.get('/api/playlists', async (req, res) => {
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        const playlists = await Playlist.find({ userId: decoded.id }).sort({ updatedAt: -1 });
+        const playlists = await Playlist.find({ userId: decoded.id })
+            .sort({ updatedAt: -1 }); // Sort by newest first
 
+        console.log('📋 Found playlists:', playlists.length);
         res.json(playlists);
     } catch (error) {
         console.error('Error fetching playlists:', error);
@@ -640,23 +642,17 @@ app.post('/api/playlists', async (req, res) => {
             return res.status(400).json({ error: 'Playlist name is required.' });
         }
 
-        // Get user info
-        const user = await User.findById(decoded.id);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found.' });
-        }
-
-        // Create new playlist
+        // Create new playlist (like history does)
         const playlist = new Playlist({
             userId: decoded.id,
-            username: user.username,
+            username: decoded.username,
             name: name,
             songs: songs || [] // Use provided songs or empty array
         });
 
         await playlist.save();
         console.log('✅ Playlist saved to database:', playlist);
-        res.json(playlist);
+        res.status(201).json(playlist);
     } catch (error) {
         console.error('Error creating playlist:', error);
         res.status(500).json({ error: 'Failed to create playlist.' });
