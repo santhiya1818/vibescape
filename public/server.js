@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
 
@@ -235,7 +236,6 @@ app.get('/api/songs', async (req, res) => {
 });
 
 // Upload API (Admin only)
-const multer = require('multer');
 const upload = multer({ 
     storage: multer.memoryStorage(),
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
