@@ -60,11 +60,8 @@
       .overlay {
         position: absolute;
         inset: 0;
-        background: url("vibescape_bg.png") center/cover no-repeat;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        opacity: 0.3;
+        background: url("music-bg.jpeg") center/cover no-repeat;
+        opacity: 0.2;
         z-index: 1;
       }
 
@@ -145,14 +142,10 @@
       /* 🎵 Hero Image Added */
       .hero-img {
         width: 260px;
-        max-width: 90%;
-        height: auto;
         border-radius: 25px;
         margin-bottom: 25px;
         box-shadow: 0 0 35px rgba(255, 0, 128, 0.6);
         animation: float 4s ease-in-out infinite;
-        object-fit: cover;
-        display: block;
       }
 
       @keyframes float {
@@ -217,10 +210,7 @@
       .banner {
         position: relative;
         height: 60vh;
-        background: url("vibescape_bg.png") center/cover no-repeat;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
+        background: url("music-banner.jpg") center/cover no-repeat;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -387,85 +377,6 @@
           font-size: 2rem;
         }
       }
-
-      /* Light Theme Styles */
-      body.light-theme {
-        background-color: #f5f5f5;
-        color: #333;
-      }
-
-      body.light-theme .hero {
-        background: linear-gradient(135deg, #e3f2fd, #f8bbd9, #b3e5fc, #ffcc80);
-        color: #333;
-      }
-
-      body.light-theme .navbar {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-      }
-
-      body.light-theme .navbar .logo h1 {
-        color: #333;
-      }
-
-      body.light-theme .nav-links a {
-        color: #333;
-      }
-
-      body.light-theme .nav-links a:hover {
-        color: #6c63ff;
-      }
-
-      body.light-theme .hero-content h2 {
-        color: #333;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-      }
-
-      body.light-theme .hero-content p {
-        color: #555;
-      }
-
-      body.light-theme .btn-primary {
-        background: linear-gradient(135deg, #6c63ff, #9c27b0);
-        border: 2px solid #6c63ff;
-      }
-
-      body.light-theme .btn-secondary {
-        background: transparent;
-        border: 2px solid #333;
-        color: #333;
-      }
-
-      body.light-theme .btn-secondary:hover {
-        background: #333;
-        color: #fff;
-      }
-
-      body.light-theme .banner {
-        background: rgba(255, 255, 255, 0.9);
-        color: #333;
-      }
-
-      body.light-theme .quote-section {
-        background: #fff;
-        color: #333;
-      }
-
-      body.light-theme .footer {
-        background: #333;
-        color: #fff;
-      }
-
-      body.light-theme .theme-toggle {
-        background: rgba(255, 255, 255, 0.2);
-        color: #333;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-      }
-
-      body.light-theme .theme-toggle:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(1.1);
-      }
     </style>
   </head>
 
@@ -491,8 +402,8 @@
       </nav>
 
       <div class="hero-content">
-        <!-- 🌟 Hero Image -->
-        <img src="vibescapelogo.jpg" alt="VibeScape Logo" class="hero-img" />
+        <!-- 🌟 Added Image -->
+        <img src="vibescape_bg.png" alt="VibeScape Music" class="hero-img" />
 
         <h2>Feel the Rhythm.<br />Live the Moment.</h2>
         <p>"Let the music take you where words can’t."</p>
@@ -549,7 +460,19 @@
       </div>
     </footer>
 
-    <!-- Include unified scripts -->
-    <script src="script.js"></script>
+    <!-- Theme Toggle Script -->
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+      const icon = toggleBtn.querySelector("i");
+      let dark = true;
+
+      toggleBtn.addEventListener("click", () => {
+        dark = !dark;
+        document.body.style.backgroundColor = dark ? "#0e0e10" : "#f5f5f5";
+        document.body.style.color = dark ? "#fff" : "#111";
+        icon.classList.toggle("fa-sun");
+        icon.classList.toggle("fa-moon");
+      });
+    </script>
   </body>
 </html>
