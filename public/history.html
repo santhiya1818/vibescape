@@ -1424,18 +1424,6 @@
                     item.classList.add('unavailable');
                 }
 
-                // Add favorite button
-                const favoriteBtn = document.createElement('button');
-                favoriteBtn.className = 'favorite-btn';
-                favoriteBtn.innerHTML = '<i class="far fa-heart"></i>';
-                favoriteBtn.title = 'Add to Favorites';
-                favoriteBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    toggleFavorite(favoriteBtn, historyEntry.songTitle);
-                };
-                
-                songActions.appendChild(favoriteBtn);
-
                 item.appendChild(songImage);
                 item.appendChild(songInfo);
                 item.appendChild(songActions);
