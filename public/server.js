@@ -26,7 +26,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vibescapeUser:santhiya1325@cluster0.dfq4mbe.mongodb.net/vibescape?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vibescapeUser:santhiya1325@cluster0.dfq4mbe.mongodb.net/test?retryWrites=true&w=majority';
 const JWT_SECRET = process.env.JWT_SECRET || 'vibescape-fallback-secret-key';
 
 console.log('Attempting to connect to MongoDB...');
@@ -67,7 +67,7 @@ const songSchema = new mongoose.Schema({
     genre: { type: String, default: 'Unknown' },
     emotion: { type: String, default: 'Unknown' },
     art: String,  // Changed from 'image' to match your database
-    Artistart: String,  // Changed from 'artistImage' to match your database
+    artistart: String,  // Changed from 'artistImage' to match your database (lowercase)
     uploaddate: { type: Date, default: Date.now },  // Changed from 'uploadDate' to match your database
     createdAt: { type: Date, default: Date.now }
 });
@@ -307,10 +307,24 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
         }
 
         // Determine file extension from uploaded audio file
-        let fileExtension = '.mp3'; // default
+        let audioFileExtension = '.mp3'; // default
         if (req.files && req.files.audio && req.files.audio[0]) {
             const originalName = req.files.audio[0].originalname;
-            fileExtension = originalName.substring(originalName.lastIndexOf('.'));
+            audioFileExtension = originalName.substring(originalName.lastIndexOf('.'));
+        }
+
+        // Determine album art extension
+        let albumArtExtension = '.jpg'; // default
+        if (req.files && req.files.albumArt && req.files.albumArt[0]) {
+            const originalName = req.files.albumArt[0].originalname;
+            albumArtExtension = originalName.substring(originalName.lastIndexOf('.'));
+        }
+
+        // Determine artist image extension
+        let artistImageExtension = '.jpg'; // default
+        if (req.files && req.files.artistImage && req.files.artistImage[0]) {
+            const originalName = req.files.artistImage[0].originalname;
+            artistImageExtension = originalName.substring(originalName.lastIndexOf('.'));
         }
 
         // For now, we'll store file info without actual file upload
@@ -320,9 +334,9 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
             artist,
             genre: genre || 'Unknown',
             emotion: emotion || 'Unknown',
-            file: `/songs/${title.replace(/\s+/g, '_')}${fileExtension}`, // Use correct extension
-            art: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
-            artistart: req.files.artistImage ? `/artistpic/${artist.replace(/\s+/g, '_')}.jpg` : '/artistpic/default.jpg',
+            file: `/songs/${title}${audioFileExtension}`, // Keep original title, use correct extension
+            art: req.files.albumArt ? `/songpic/${title.toLowerCase().replace(/\s+/g, '')}${albumArtExtension}` : '/songpic/default.jpg',
+            artistart: req.files.artistImage ? `/artistpic/${artist.toLowerCase().replace(/\s+/g, '')}${artistImageExtension}` : '/artistpic/default.jpg',
             uploaddate: new Date()
         });
 

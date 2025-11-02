@@ -161,9 +161,14 @@
         <div class="songs-management">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>🎵 Manage Songs</h2>
-                <button onclick="clearAllSongs()" class="delete-btn" style="background: #dc3545; padding: 10px 20px; font-size: 14px;">
-                    <i class="fa-solid fa-trash-can"></i> Clear All Songs
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="loadSongs(true)" class="upload-btn" style="background: #28a745; padding: 10px 20px; font-size: 14px; width: auto;">
+                        <i class="fa-solid fa-refresh"></i> Refresh List
+                    </button>
+                    <button onclick="clearAllSongs()" class="delete-btn" style="background: #dc3545; padding: 10px 20px; font-size: 14px;">
+                        <i class="fa-solid fa-trash-can"></i> Clear All Songs
+                    </button>
+                </div>
             </div>
             <div id="songsList">
                 <div class="loading">Loading songs...</div>
@@ -339,10 +344,13 @@
         }
 
         // Global loadSongs function
-        async function loadSongs() {
+        async function loadSongs(forceRefresh = false) {
             try {
-                console.log('Loading songs from API...');
-                const response = await fetch('/api/songs');
+                console.log('Loading songs from API...', forceRefresh ? '(Force refresh)' : '');
+                
+                // Add cache busting parameter if force refresh
+                const url = forceRefresh ? `/api/songs?_=${Date.now()}` : '/api/songs';
+                const response = await fetch(url);
                 console.log('API response status:', response.status);
                 
                 if (!response.ok) {
@@ -439,9 +447,9 @@
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    showMessage('Song uploaded successfully!', 'success');
+                    showMessage('Song uploaded successfully! The song will appear for users within 30 seconds. Click "Refresh List" to see it immediately.', 'success');
                     uploadForm.reset();
-                    loadSongs();
+                    loadSongs(true); // Force refresh the admin list
                 } else {
                     showMessage(result.error || 'Upload failed', 'error');
                 }
