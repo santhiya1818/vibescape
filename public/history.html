@@ -879,47 +879,6 @@
       transform: translateY(-1px);
     }
 
-    .delete-btn {
-      background: var(--card);
-      border: 2px solid var(--delete-color);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: var(--delete-color);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-
-    .delete-btn:hover {
-      background: var(--delete-color);
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
-    }
-
-    .favorite-btn {
-      background: transparent;
-      border: none;
-      color: var(--text);
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      font-size: 1.2rem;
-    }
-
-    .favorite-btn:hover {
-      color: #ff4757;
-      background: rgba(255, 71, 87, 0.1);
-    }
-
-    .favorite-btn.active {
-      color: #ff4757;
-    }
-
     .unavailable-msg {
       color: var(--text);
       opacity: 0.6;
@@ -1457,36 +1416,12 @@
                         downloadSong(songData.file, historyEntry.songTitle, historyEntry.artist);
                     };
                     songActions.appendChild(downloadBtn);
-
-                    // Add delete button
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-                    deleteBtn.title = 'Remove from History';
-                    deleteBtn.onclick = (e) => {
-                        console.log('Delete button clicked!', historyEntry.songTitle);
-                        e.stopPropagation();
-                        deleteFromHistory(historyEntry, item);
-                    };
-                    songActions.appendChild(deleteBtn);
                 } else {
                     const unavailableMsg = document.createElement('div');
                     unavailableMsg.className = 'unavailable-msg';
                     unavailableMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Song no longer available';
                     songActions.appendChild(unavailableMsg);
                     item.classList.add('unavailable');
-
-                    // Add delete button even for unavailable songs
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-                    deleteBtn.title = 'Remove from History';
-                    deleteBtn.onclick = (e) => {
-                        console.log('Delete button clicked for unavailable song!', historyEntry.songTitle);
-                        e.stopPropagation();
-                        deleteFromHistory(historyEntry, item);
-                    };
-                    songActions.appendChild(deleteBtn);
                 }
 
                 // Add favorite button
@@ -1603,56 +1538,6 @@
             } catch (error) {
                 console.error('Download failed:', error);
                 showNotification('Download failed. Please try again.', 'error');
-            }
-        }
-
-        // Favorite functionality
-        function toggleFavorite(button, songTitle) {
-            const icon = button.querySelector('i');
-            const isCurrentlyFavorite = icon.classList.contains('fas');
-            
-            if (isCurrentlyFavorite) {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                button.classList.remove('active');
-                showNotification(`Removed "${songTitle}" from favorites`, 'info');
-            } else {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                button.classList.add('active');
-                showNotification(`Added "${songTitle}" to favorites`, 'success');
-            }
-            
-            // Here you can add API call to save favorites to backend
-            saveFavoriteToBackend(songTitle, !isCurrentlyFavorite);
-        }
-
-        // Save favorite to backend
-        async function saveFavoriteToBackend(songTitle, isFavorite) {
-            try {
-                const token = getAuthToken();
-                if (!token) {
-                    showNotification('Please login to save favorites', 'error');
-                    return;
-                }
-
-                const response = await fetch(isFavorite ? '/api/favorites' : '/api/favorites/remove', {
-                    method: isFavorite ? 'POST' : 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ songTitle })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to ${isFavorite ? 'add to' : 'remove from'} favorites`);
-                }
-
-                console.log(`Successfully ${isFavorite ? 'added to' : 'removed from'} favorites:`, songTitle);
-            } catch (error) {
-                console.error('Error saving favorite:', error);
-                showNotification(`Failed to ${isFavorite ? 'add to' : 'remove from'} favorites`, 'error');
             }
         }
 
@@ -1795,104 +1680,6 @@
                     }
                 }, 300);
             }, 3000);
-        }
-
-        // Delete individual song from history
-        async function deleteFromHistory(historyEntry, itemElement) {
-            console.log('Delete function called for:', historyEntry.songTitle);
-            console.log('History entry object:', historyEntry);
-            
-            if (confirm(`Are you sure you want to remove "${historyEntry.songTitle}" from your history?`)) {
-                console.log('User confirmed deletion');
-                try {
-                    const token = getAuthToken();
-                    console.log('Token retrieved:', token ? 'Found' : 'Not found');
-                    console.log('Full token (first 20 chars):', token ? token.substring(0, 20) + '...' : 'No token');
-                    
-                    // Also check other possible token locations
-                    console.log('vibescape-token:', sessionStorage.getItem('vibescape-token') ? 'Found' : 'Not found');
-                    console.log('token:', sessionStorage.getItem('token') ? 'Found' : 'Not found');
-                    console.log('authToken:', sessionStorage.getItem('authToken') ? 'Found' : 'Not found');
-                    
-                    if (!token) {
-                        console.error('No authentication token found');
-                        showNotification('Please login again to delete songs', 'error');
-                        return;
-                    }
-                    
-                    const requestBody = {
-                        title: historyEntry.songTitle,
-                        playedAt: historyEntry.playedAt
-                    };
-                    console.log('Sending delete request with:', requestBody);
-                    console.log('Request URL:', '/api/history/delete');
-                    console.log('Full URL will be:', window.location.origin + '/api/history/delete');
-                    
-                    // First test if the test endpoint exists
-                    try {
-                        const testResponse = await fetch('/api/test-delete');
-                        const testResult = await testResponse.text();
-                        console.log('Test endpoint response:', testResponse.status, testResult);
-                    } catch (testError) {
-                        console.log('Test endpoint error:', testError);
-                    }
-                    
-                    const response = await fetch('/api/history/delete', {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
-                    });
-
-                    console.log('Response status:', response.status);
-                    
-                    if (response.ok) {
-                        console.log('Delete successful, updating UI');
-                        // Remove from local history array
-                        const index = history.findIndex(h => 
-                            h.songTitle === historyEntry.songTitle && 
-                            h.playedAt === historyEntry.playedAt
-                        );
-                        if (index > -1) {
-                            history.splice(index, 1);
-                        }
-
-                        // Add fade out animation
-                        itemElement.style.transition = 'all 0.3s ease';
-                        itemElement.style.transform = 'translateX(-100%)';
-                        itemElement.style.opacity = '0';
-                        
-                        // Remove element after animation
-                        setTimeout(() => {
-                            if (itemElement.parentNode) {
-                                itemElement.parentNode.removeChild(itemElement);
-                            }
-                            // Update stats after deletion
-                            updateStats();
-                            
-                            // Check if history is empty and show empty state
-                            if (history.length === 0) {
-                                document.getElementById('history-list').style.display = 'none';
-                                document.getElementById('empty-state').style.display = 'block';
-                                document.getElementById('clear-history').style.display = 'none';
-                            }
-                        }, 300);
-
-                        showNotification(`Removed "${historyEntry.songTitle}" from history`, 'success');
-                    } else {
-                        const errorText = await response.text();
-                        console.error('Failed to delete from history:', response.status, errorText);
-                        showNotification('Failed to remove song from history. Please try again.', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error deleting from history:', error);
-                    showNotification('An error occurred while removing the song.', 'error');
-                }
-            } else {
-                console.log('Delete cancelled by user');
-            }
         }
 
         // Initialize global player
