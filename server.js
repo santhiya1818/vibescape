@@ -439,13 +439,20 @@ app.delete('/api/history', async (req, res) => {
 
 // Delete individual history item
 app.delete('/api/history/delete', async (req, res) => {
+    console.log('🔥 DELETE /api/history/delete endpoint called');
+    console.log('Request body:', req.body);
+    console.log('Authorization header:', req.header('Authorization'));
+    
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
         if (!token) {
+            console.log('❌ No token provided');
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
         const decoded = jwt.verify(token, 'your_jwt_secret');
+        console.log('✅ Token decoded for user ID:', decoded.id);
+        
         const { title, playedAt } = req.body;
 
         if (!title || !playedAt) {
@@ -468,6 +475,11 @@ app.delete('/api/history/delete', async (req, res) => {
         console.error('Error deleting history item:', error);
         res.status(500).json({ error: 'Failed to delete history item.' });
     }
+});
+
+// Test endpoint to verify deployment
+app.get('/api/test-delete', (req, res) => {
+    res.json({ message: 'Delete endpoint is deployed!', timestamp: new Date().toISOString() });
 });
 
 // ===== FAVORITES ENDPOINTS =====
