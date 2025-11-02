@@ -203,6 +203,98 @@
             }
         }
 
+        // Global deleteSong function (moved outside initializeAdminPanel for global access)
+        async function deleteSong(songId, songTitle) {
+            console.log('Delete button clicked for:', songTitle, 'ID:', songId);
+            
+            if (!confirm(`Are you sure you want to delete "${songTitle}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const token = sessionStorage.getItem('vibescape-token');
+                console.log('Token retrieved:', token ? 'Token exists' : 'No token found');
+                
+                if (!token) {
+                    showMessage('No authentication token found. Please login again.', 'error');
+                    return;
+                }
+                
+                console.log('Making DELETE request to:', `/api/songs/${songId}`);
+                const response = await fetch(`/api/songs/${songId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (response.ok) {
+                    showMessage(`"${songTitle}" deleted successfully!`, 'success');
+                    loadSongs();
+                } else {
+                    showMessage(result.error || `Delete failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showMessage(`Delete failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Global showMessage function
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            if (messageDiv) {
+                messageDiv.innerHTML = `<div class="message ${type}"><i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> ${text}</div>`;
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Global loadSongs function
+        async function loadSongs() {
+            try {
+                const response = await fetch('/api/songs');
+                const songs = await response.json();
+                const songsList = document.getElementById('songsList');
+                if (songs.length === 0) {
+                    songsList.innerHTML = '<div class="loading">No songs found.</div>';
+                    updateStats([]);
+                    return;
+                }
+                songsList.innerHTML = '';
+                songs.forEach(song => {
+                    const uploadDate = new Date(song.uploadDate).toLocaleString();
+                    const songItem = document.createElement('div');
+                    songItem.className = 'song-item';
+                    
+                    songItem.innerHTML = `
+                        <div class="song-details">
+                            <h4><i class="fa-solid fa-music"></i> ${song.title}</h4>
+                            <p><i class="fa-solid fa-user"></i> <strong>Artist:</strong> ${song.artist}</p>
+                            <p><i class="fa-solid fa-tags"></i> <strong>Genre:</strong> ${song.genre || 'Unknown'}</p>
+                            <p><i class="fa-solid fa-calendar"></i> <strong>Uploaded:</strong> ${uploadDate}</p>
+                        </div>
+                        <div class="song-actions">
+                            <button class="delete-btn" onclick="deleteSong('${song._id}', '${song.title}')">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    `;
+                    songsList.appendChild(songItem);
+                });
+                updateStats(songs);
+            } catch (error) {
+                document.getElementById('songsList').innerHTML = 
+                    '<div class="loading error"><i class="fa-solid fa-exclamation-triangle"></i> Error loading songs. Is the server running?</div>';
+            }
+        }
+
         // Initialize page only if admin access is verified
         (async function initAdminPage() {
             const isAdmin = await verifyAdminAccess();
@@ -228,15 +320,6 @@
 
         const uploadForm = document.getElementById('uploadForm');
         const uploadBtn = document.getElementById('uploadBtn');
-        const messageDiv = document.getElementById('message');
-
-        // Show message
-        function showMessage(text, type) {
-            messageDiv.innerHTML = `<div class="message ${type}"><i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> ${text}</div>`;
-            setTimeout(() => {
-                messageDiv.innerHTML = '';
-            }, 5000);
-        }
 
         // Update statistics
         function updateStats(songs) {
@@ -278,71 +361,6 @@
                 uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload Song';
             }
         });
-
-        // Load and display songs
-        async function loadSongs() {
-            try {
-                const response = await fetch('/api/songs');
-                const songs = await response.json();
-                const songsList = document.getElementById('songsList');
-                if (songs.length === 0) {
-                    songsList.innerHTML = '<div class="loading">No songs found.</div>';
-                    updateStats([]);
-                    return;
-                }
-                songsList.innerHTML = '';
-                songs.forEach(song => {
-                    const uploadDate = new Date(song.uploadDate).toLocaleString();
-                    const songItem = document.createElement('div');
-                    songItem.className = 'song-item';
-                    
-                    // *** CORRECTION 1: Pass song.file to previewSong, not a non-existent property ***
-                    songItem.innerHTML = `
-                        <div class="song-details">
-                            <h4><i class="fa-solid fa-music"></i> ${song.title}</h4>
-                            <p><i class="fa-solid fa-user"></i> <strong>Artist:</strong> ${song.artist}</p>
-                            <p><i class="fa-solid fa-tags"></i> <strong>Genre:</strong> ${song.genre || 'Unknown'}</p>
-                            <p><i class="fa-solid fa-calendar"></i> <strong>Uploaded:</strong> ${uploadDate}</p>
-                        </div>
-                        <div class="song-actions">
-                            <button class="delete-btn" onclick="deleteSong('${song._id}', '${song.title}')">
-                                <i class="fa-solid fa-trash"></i> Delete
-                            </button>
-                        </div>
-                    `;
-                    songsList.appendChild(songItem);
-                });
-                updateStats(songs);
-            } catch (error) {
-                document.getElementById('songsList').innerHTML = 
-                    '<div class="loading error"><i class="fa-solid fa-exclamation-triangle"></i> Error loading songs. Is the server running?</div>';
-            }
-        }
-
-        // Delete song
-        async function deleteSong(songId, songTitle) {
-            if (!confirm(`Are you sure you want to delete "${songTitle}"? This cannot be undone.`)) {
-                return;
-            }
-            try {
-                const token = sessionStorage.getItem('vibescape-token');
-                const response = await fetch(`/api/songs/${songId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    showMessage(`"${songTitle}" deleted successfully!`, 'success');
-                    loadSongs();
-                } else {
-                    showMessage(result.error || 'Delete failed', 'error');
-                }
-            } catch (error) {
-                showMessage('Delete failed. Please try again.', 'error');
-            }
-        }
 
         // Load songs when the page is ready
         loadSongs();

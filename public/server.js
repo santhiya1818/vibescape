@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vibescape';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vibescapeUser:santhiya1325@cluster0.dfq4mbe.mongodb.net/vibescape?retryWrites=true&w=majority';
 const JWT_SECRET = process.env.JWT_SECRET || 'vibescape-fallback-secret-key';
 
 console.log('Attempting to connect to MongoDB...');
@@ -303,7 +303,15 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
 app.delete('/api/songs/:id', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        await Song.findByIdAndDelete(id);
+        console.log('Delete request received for song ID:', id);
+        console.log('User making request:', req.user);
+        
+        const deletedSong = await Song.findByIdAndDelete(id);
+        if (!deletedSong) {
+            return res.status(404).json({ error: 'Song not found' });
+        }
+        
+        console.log('Song deleted successfully:', deletedSong.title);
         res.json({ message: 'Song deleted successfully' });
     } catch (error) {
         console.error('Delete error:', error);
