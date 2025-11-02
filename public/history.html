@@ -800,6 +800,288 @@
         padding: 0 15px;
       }
     }
+
+    /* Enhanced Dropdown Styling */
+    .filter-select {
+      position: relative;
+      z-index: 10;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    .filter-select option {
+      background: var(--card);
+      color: var(--text);
+      padding: 8px 12px;
+      border: none;
+    }
+
+    /* Song Actions Styling */
+    .song-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      border-top: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .play-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .play-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .play-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .download-btn {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .download-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .favorite-btn {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+    }
+
+    .favorite-btn:hover {
+      color: #ff4757;
+      background: rgba(255, 71, 87, 0.1);
+    }
+
+    .favorite-btn.active {
+      color: #ff4757;
+    }
+
+    .unavailable-msg {
+      color: var(--text);
+      opacity: 0.6;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Global Play Bar */
+    .global-play-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 15px 20px;
+      display: none;
+      align-items: center;
+      gap: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .global-play-bar.active {
+      display: flex;
+    }
+
+    .current-song-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .current-song-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .current-song-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .current-song-image i {
+      color: var(--text);
+      opacity: 0.5;
+    }
+
+    .current-song-details h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .current-song-details p {
+      margin: 2px 0 0 0;
+      font-size: 0.8rem;
+      color: var(--text);
+      opacity: 0.7;
+    }
+
+    .global-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .global-play-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .global-play-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .volume-slider {
+      width: 80px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .close-player {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+    }
+
+    .close-player:hover {
+      opacity: 1;
+      background: var(--border);
+    }
+
+    /* Enhanced Mobile Responsive */
+    @media (max-width: 768px) {
+      .global-play-bar {
+        padding: 12px 15px;
+        gap: 10px;
+      }
+      
+      .current-song-image {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .current-song-details h4 {
+        font-size: 0.85rem;
+      }
+      
+      .current-song-details p {
+        font-size: 0.75rem;
+      }
+      
+      .global-play-btn {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .volume-control {
+        display: none;
+      }
+      
+      .song-actions {
+        padding: 10px;
+        gap: 8px;
+      }
+      
+      .download-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Fix container padding for play bar */
+    body {
+      padding-bottom: 0;
+    }
+
+    body.has-player {
+      padding-bottom: 80px;
+    }
   </style>
 </head>
 <body>
@@ -908,6 +1190,37 @@
     <a href="terms.html">Terms of Service</a>
     <a href="privacy.html">Privacy Policy</a>
   </footer>
+
+  <!-- Global Play Bar -->
+  <div class="global-play-bar" id="global-play-bar">
+    <div class="current-song-info">
+      <div class="current-song-image" id="current-song-image">
+        <i class="fas fa-music"></i>
+      </div>
+      <div class="current-song-details">
+        <h4 id="current-song-title">Select a song to play</h4>
+        <p id="current-song-artist">No song selected</p>
+      </div>
+    </div>
+    
+    <div class="global-controls">
+      <button class="global-play-btn" id="global-play-btn">
+        <i class="fas fa-play"></i>
+      </button>
+      
+      <div class="volume-control">
+        <i class="fas fa-volume-up"></i>
+        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
+      </div>
+      
+      <button class="close-player" id="close-player">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- Hidden audio element for global playback -->
+    <audio id="global-audio" preload="metadata"></audio>
+  </div>
 
   <!-- *** SCRIPT SECTION HAS BEEN COMPLETELY REPLACED *** -->
   <script>
@@ -1041,11 +1354,20 @@
                     playButton.onclick = (e) => {
                         e.stopPropagation();
                         const audio = item.querySelector('audio');
+                        
                         if (audio.paused) {
                             // Pause all other audio elements
-                            document.querySelectorAll('audio').forEach(a => a.pause());
+                            document.querySelectorAll('audio').forEach(a => {
+                                if (a !== audio) a.pause();
+                            });
+                            
                             audio.play();
                             playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                            
+                            // Set global player
+                            const imageName = historyEntry.songTitle.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+                            const imageSrc = `songpic/${imageName}.jpg`;
+                            setGlobalPlayer(audio, historyEntry.songTitle, historyEntry.artist, imageSrc);
                         } else {
                             audio.pause();
                             playButton.innerHTML = '<i class="fas fa-play"></i>';
@@ -1101,6 +1423,17 @@
                     };
                     
                     songActions.appendChild(audio);
+
+                    // Add download button
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
+                    downloadBtn.title = 'Download Song';
+                    downloadBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        downloadSong(songData.file, historyEntry.songTitle, historyEntry.artist);
+                    };
+                    songActions.appendChild(downloadBtn);
                 } else {
                     const unavailableMsg = document.createElement('div');
                     unavailableMsg.className = 'unavailable-msg';
@@ -1114,7 +1447,10 @@
                 favoriteBtn.className = 'favorite-btn';
                 favoriteBtn.innerHTML = '<i class="far fa-heart"></i>';
                 favoriteBtn.title = 'Add to Favorites';
-                // You can implement favorite functionality here
+                favoriteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(favoriteBtn, historyEntry.songTitle);
+                };
                 
                 songActions.appendChild(favoriteBtn);
 
@@ -1203,6 +1539,201 @@
         // Add event listeners for search and filter
         document.getElementById('history-search').addEventListener('input', renderHistory);
         document.getElementById('history-filter').addEventListener('change', renderHistory);
+
+        // Download functionality
+        function downloadSong(audioSrc, title, artist) {
+            try {
+                const link = document.createElement('a');
+                link.href = audioSrc;
+                link.download = `${title} - ${artist}.mp3`;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show download notification
+                showNotification(`Downloading "${title}" by ${artist}`, 'success');
+            } catch (error) {
+                console.error('Download failed:', error);
+                showNotification('Download failed. Please try again.', 'error');
+            }
+        }
+
+        // Favorite functionality
+        function toggleFavorite(button, songTitle) {
+            const icon = button.querySelector('i');
+            const isCurrentlyFavorite = icon.classList.contains('fas');
+            
+            if (isCurrentlyFavorite) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                button.classList.remove('active');
+                showNotification(`Removed "${songTitle}" from favorites`, 'info');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                button.classList.add('active');
+                showNotification(`Added "${songTitle}" to favorites`, 'success');
+            }
+            
+            // Here you can add API call to save favorites to backend
+            saveFavoriteToBackend(songTitle, !isCurrentlyFavorite);
+        }
+
+        // Global Play Bar functionality
+        let currentGlobalAudio = null;
+        let currentSongData = null;
+
+        function initializeGlobalPlayer() {
+            const globalPlayBar = document.getElementById('global-play-bar');
+            const globalPlayBtn = document.getElementById('global-play-btn');
+            const globalAudio = document.getElementById('global-audio');
+            const volumeSlider = document.getElementById('volume-slider');
+            const closePlayer = document.getElementById('close-player');
+
+            // Global play/pause button
+            globalPlayBtn.addEventListener('click', () => {
+                if (currentGlobalAudio) {
+                    if (currentGlobalAudio.paused) {
+                        currentGlobalAudio.play();
+                        globalPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    } else {
+                        currentGlobalAudio.pause();
+                        globalPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                }
+            });
+
+            // Volume control
+            volumeSlider.addEventListener('input', (e) => {
+                if (currentGlobalAudio) {
+                    currentGlobalAudio.volume = e.target.value / 100;
+                }
+            });
+
+            // Close player
+            closePlayer.addEventListener('click', () => {
+                if (currentGlobalAudio) {
+                    currentGlobalAudio.pause();
+                    currentGlobalAudio = null;
+                }
+                globalPlayBar.classList.remove('active');
+                document.body.classList.remove('has-player');
+                globalPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            });
+        }
+
+        function setGlobalPlayer(audioElement, songTitle, artist, imageSrc = null) {
+            const globalPlayBar = document.getElementById('global-play-bar');
+            const currentSongTitle = document.getElementById('current-song-title');
+            const currentSongArtist = document.getElementById('current-song-artist');
+            const currentSongImage = document.getElementById('current-song-image');
+            const globalPlayBtn = document.getElementById('global-play-btn');
+            const volumeSlider = document.getElementById('volume-slider');
+
+            // Update current audio reference
+            currentGlobalAudio = audioElement;
+            currentSongData = { title: songTitle, artist: artist, image: imageSrc };
+
+            // Update UI
+            currentSongTitle.textContent = songTitle;
+            currentSongArtist.textContent = artist;
+            
+            // Update image
+            if (imageSrc) {
+                currentSongImage.innerHTML = `<img src="${imageSrc}" alt="${songTitle}">`;
+            } else {
+                currentSongImage.innerHTML = '<i class="fas fa-music"></i>';
+            }
+
+            // Set volume
+            audioElement.volume = volumeSlider.value / 100;
+
+            // Show play bar
+            globalPlayBar.classList.add('active');
+            document.body.classList.add('has-player');
+
+            // Update play button based on audio state
+            if (audioElement.paused) {
+                globalPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                globalPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+
+            // Sync play button with audio state
+            audioElement.onplay = () => {
+                globalPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            };
+
+            audioElement.onpause = () => {
+                globalPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            };
+
+            audioElement.onended = () => {
+                globalPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            };
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            // Add styles
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--card);
+                color: var(--text);
+                padding: 12px 20px;
+                border-radius: 8px;
+                border-left: 4px solid ${type === 'success' ? '#2ed573' : type === 'error' ? '#ff4757' : '#5352ed'};
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Save favorite to backend (placeholder)
+        async function saveFavoriteToBackend(songTitle, isFavorite) {
+            try {
+                const token = sessionStorage.getItem('token');
+                // Implement API call to save favorites
+                console.log(`${isFavorite ? 'Added' : 'Removed'} favorite: ${songTitle}`);
+            } catch (error) {
+                console.error('Failed to save favorite:', error);
+            }
+        }
+
+        // Initialize global player
+        initializeGlobalPlayer();
 
         clearBtn.onclick = async () => {
             if (confirm('Are you sure you want to clear your entire listening history?')) {
