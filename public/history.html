@@ -215,6 +215,31 @@
       opacity: 1;
     }
     
+    .song-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gradient-1);
+      flex-shrink: 0;
+    }
+    
+    .music-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .music-icon i {
+      font-size: 1.5rem;
+      color: white;
+    }
+    
     .song-info {
       flex: 1;
       margin-right: 15px;
@@ -1308,29 +1333,9 @@
                 const songImage = document.createElement('div');
                 songImage.className = 'song-image';
                 
-                // Create a mapping for song titles to image names
-                const imageMap = {
-                    'rasputin': 'rasputin',
-                    'fairytale': 'fairytale', 
-                    'run bullet proof': 'bangbangbang',
-                    'bang bang bang': 'bangbangbang',
-                    'skyfall': 'skyfall',
-                    'loro': 'loro',
-                    'matushka': 'matushka',
-                    'antifragile': 'antifragile',
-                    'shoot to thrill': 'shoot to thrill',
-                    'smart': 'smart',
-                    'pink venom': 'pinkvenom'
-                };
-                
-                // Try to find song picture with mapping
-                const songKey = historyEntry.songTitle.toLowerCase();
-                const imageName = imageMap[songKey] || historyEntry.songTitle.toLowerCase().replace(/\s+/g, '').replace(/[^\w]/g, '');
-                
+                // Simple music icon instead of large album art
                 songImage.innerHTML = `
-                    <img src="songpic/${imageName}.png" alt="${historyEntry.songTitle}" 
-                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="default-image" style="display:none;">
+                    <div class="music-icon">
                         <i class="fas fa-music"></i>
                     </div>
                 `;
