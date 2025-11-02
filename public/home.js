@@ -122,42 +122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('✅ All content sections updated');
     }
 
-    // === Theme Toggle ===
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-theme');
-            const icon = themeToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        }
-
-        themeToggle.addEventListener('click', function () {
-            document.body.classList.toggle('light-theme');
-            const icon = this.querySelector('i');
-            
-            if (document.body.classList.contains('light-theme')) {
-                // Switch to light theme
-                localStorage.setItem('theme', 'light');
-                if (icon) {
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
-                }
-            } else {
-                // Switch to dark theme
-                localStorage.setItem('theme', 'dark');
-                if (icon) {
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                }
-            }
-        });
-    }
-
     // === Profile dropdown toggle ===
     const profile = document.querySelector('.profile');
     const dropdown = document.getElementById('profile-dropdown');
