@@ -1,10 +1,31 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const hideLoading = () => {
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+            document.body.classList.add('loaded');
+        }
+    };
 
     let songs = []; // This will be filled by the server
 
     // Optimized function to fetch songs with caching and timeout
     async function loadSongsFromServer() {
         try {
+            // Check cache first (only if less than 5 minutes old)
+            const cachedSongs = localStorage.getItem('vibescape-songs-cache');
+            const cacheTimestamp = localStorage.getItem('vibescape-songs-timestamp');
+            const cacheAge = Date.now() - parseInt(cacheTimestamp || '0');
+            
+            if (cachedSongs && cacheAge < 300000) { // 5 minutes
+                console.log('🚀 Using cached songs data');
+                songs = JSON.parse(cachedSongs);
+                displayAllSongs();
+                hideLoading();
+                return;
+            }
+            
             // Add timeout to prevent hanging
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -30,6 +51,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } catch (e) {
                     console.warn('Could not cache songs:', e);
                 }
+                console.log('✅ Songs loaded successfully from server');
+                displayAllSongs();
+                hideLoading();
+            } else {
+                console.warn('Empty or invalid songs data received');
+                tryLoadFromCache();
             }
         } catch (error) {
             console.error('Could not load songs from server:', error);
@@ -50,8 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Use cache if less than 5 minutes old
                 if (cacheAge < 5 * 60 * 1000) {
                     songs = JSON.parse(cachedSongs);
-                    console.log('Loaded songs from cache');
-                    return;
+                    console.log('✅ Songs loaded from cache');
+                    displayAllSongs();
+                    hideLoading();
+                    return true;
                 }
             }
         } catch (e) {
@@ -60,6 +89,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // If no cache available, show error
         console.warn('No songs available - server unreachable and no cache');
+        showConnectionError();
+        return false;
+    }
+    
+    function showConnectionError() {
+        hideLoading();
+        // Show error message to user
+        const errorDiv = document.createElement('div');
+        errorDiv.innerHTML = `
+            <div style="text-align: center; padding: 50px; color: #888;">
+                <h3>🌐 Connection Issue</h3>
+                <p>Having trouble loading songs. Please check your connection and try refreshing.</p>
+                <button onclick="window.location.reload()" 
+                        style="padding: 10px 20px; background: #1db954; border: none; border-radius: 20px; color: white; cursor: pointer;">
+                    Refresh Page
+                </button>
+            </div>
+        `;
+        const gridContainer = document.querySelector('.grid-container');
+        if (gridContainer) {
+            gridContainer.innerHTML = '';
+            gridContainer.appendChild(errorDiv);
+        }
+    }
+    
+    // Simple function to display all songs (for cached loading)
+    function displayAllSongs() {
+        // Since home page doesn't have a main song grid, just populate the sections
+        populateArtists();
+        updateRecentlyPlayed();
+        console.log('✅ All content sections updated');
     }
 
     // === Theme Toggle ===
