@@ -598,8 +598,17 @@ app.get('/api/favorites', async (req, res) => {
 
 // Test endpoint for debugging
 app.get('/api/test', (req, res) => {
-    console.log('🧪 Test endpoint hit');
-    res.json({ message: 'Playlist endpoints are available', timestamp: new Date() });
+    console.log('🧪 Test endpoint hit - Nov 2, 2025 02:12 PM');
+    res.json({ 
+        message: 'Playlist endpoints are available', 
+        timestamp: new Date(),
+        playlistEndpoints: [
+            'GET /api/playlists',
+            'POST /api/playlists', 
+            'PUT /api/playlists/:id',
+            'DELETE /api/playlists/:id'
+        ]
+    });
 });
 
 // Get user playlists
