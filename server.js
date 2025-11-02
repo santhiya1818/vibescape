@@ -10,6 +10,9 @@ const crypto = require('crypto');
 const app = express();
 const port = process.env.PORT || 3030;
 
+// JWT Secret key
+const JWT_SECRET = process.env.JWT_SECRET || JWT_SECRET;
+
 // Middleware
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -205,7 +208,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ error: 'Invalid credentials.' });
         }
         const payload = { id: user._id, username: user.username, role: user.role };
-        const token = jwt.sign(payload, 'your_jwt_secret', { expiresIn: '1d' });
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
         res.json({ 
             message: 'Login successful! Redirecting...', 
             token, 
@@ -253,7 +256,7 @@ const verifyAdmin = async (req, res, next) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const user = await User.findById(decoded.id);
         
         if (!user || user.role !== 'admin') {
@@ -376,7 +379,7 @@ app.get('/api/history', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const history = await History.find({ userId: decoded.id })
             .sort({ playedAt: -1 }) // Sort by newest first
             .limit(50); // Limit to last 50 songs
@@ -396,7 +399,7 @@ app.post('/api/history', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const { songTitle, artist } = req.body;
 
         if (!songTitle || !artist) {
@@ -438,7 +441,7 @@ app.delete('/api/history', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         await History.deleteMany({ userId: decoded.id });
 
         res.json({ message: 'History cleared successfully.' });
@@ -461,7 +464,7 @@ app.delete('/api/history/delete', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         console.log('✅ Token decoded for user ID:', decoded.id);
         
         const { title, playedAt } = req.body;
@@ -503,7 +506,7 @@ app.post('/api/favorites', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const { songTitle } = req.body;
 
         if (!songTitle) {
@@ -549,7 +552,7 @@ app.delete('/api/favorites/remove', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const { songTitle } = req.body;
 
         if (!songTitle) {
@@ -581,7 +584,7 @@ app.get('/api/favorites', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const favorites = await Favorite.find({ userId: decoded.id }).sort({ addedAt: -1 });
 
         res.json(favorites);
@@ -601,7 +604,7 @@ app.get('/api/playlists', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const playlists = await Playlist.find({ userId: decoded.id }).sort({ updatedAt: -1 });
 
         res.json(playlists);
@@ -619,7 +622,7 @@ app.post('/api/playlists', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const { name } = req.body;
 
         if (!name) {
@@ -656,7 +659,7 @@ app.put('/api/playlists/:id', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const { songs } = req.body;
 
         const playlist = await Playlist.findOne({ 
@@ -687,7 +690,7 @@ app.delete('/api/playlists/:id', async (req, res) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, JWT_SECRET);
 
         const deletedPlaylist = await Playlist.findOneAndDelete({
             _id: req.params.id,
