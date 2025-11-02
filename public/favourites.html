@@ -134,8 +134,10 @@
 
         // --- DATABASE HELPERS ---
         async function getFavourites() {
-            const token = sessionStorage.getItem('vibescape-token');
+            // Try both storage locations for compatibility
+            const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
             if (!token) {
+                console.log('No authentication token found - redirecting to login');
                 window.location.href = 'login.html';
                 return [];
             }
@@ -152,6 +154,7 @@
                     // Convert to array of song titles for compatibility
                     return favorites.map(fav => fav.songTitle);
                 } else if (response.status === 401) {
+                    console.log('Token expired or invalid - redirecting to login');
                     window.location.href = 'login.html';
                     return [];
                 }
@@ -162,13 +165,22 @@
         }
 
         async function removeFavorite(songTitle) {
-            const token = sessionStorage.getItem('vibescape-token');
-            if (!token) return false;
+            // Try both storage locations for compatibility  
+            const token = sessionStorage.getItem('vibescape-token') || localStorage.getItem('vibescape-token');
+            if (!token) {
+                console.log('No authentication token found for delete operation');
+                return false;
+            }
             
             try {
                 // Find the song in our library to get artist info
-                const songInfo = songLibrary.find(song => song.title === songTitle);
+                const songInfo = allSongs.find(song => song.title === songTitle);
                 const artist = songInfo ? songInfo.artist : 'Unknown Artist';
+                
+                console.log(`🗑️ Removing favorite: "${songTitle}" by ${artist}`);
+                console.log('🔑 Using token:', token ? 'Found' : 'Missing');
+                console.log('📚 Song library has', allSongs.length, 'songs');
+                console.log('🎵 Found song info:', songInfo ? 'Yes' : 'No');
                 
                 const response = await fetch('/api/favorites', {
                     method: 'DELETE',
@@ -182,9 +194,18 @@
                     })
                 });
                 
-                return response.ok;
+                console.log(`🗑️ Delete response for "${songTitle}":`, response.status, response.statusText);
+                
+                if (response.ok) {
+                    console.log(`✅ Successfully removed "${songTitle}" from favorites`);
+                    return true;
+                } else {
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error(`❌ Failed to remove "${songTitle}":`, errorData);
+                    return false;
+                }
             } catch (error) {
-                console.error('Error removing favorite:', error);
+                console.error(`❌ Error removing favorite "${songTitle}":`, error);
                 return false;
             }
         }
@@ -331,8 +352,15 @@
 
         deleteBtn.onclick = async () => {
             const checkedTitles = Array.from(listEl.querySelectorAll('.delete-checkbox:checked')).map(cb => cb.dataset.title);
+            console.log('🗑️ Delete button clicked, selected songs:', checkedTitles);
+            
             if (checkedTitles.length === 0) {
-                alert('Select songs to delete.');
+                alert('Please select songs to delete by checking their checkboxes.');
+                return;
+            }
+            
+            // Confirm deletion
+            if (!confirm(`Are you sure you want to remove ${checkedTitles.length} song(s) from your favorites?`)) {
                 return;
             }
             
@@ -343,10 +371,25 @@
             }
 
             // Remove each song from database
-            const removePromises = checkedTitles.map(title => removeFavorite(title));
-            await Promise.all(removePromises);
+            console.log('🗑️ Starting deletion process...');
+            const removePromises = checkedTitles.map(async (title) => {
+                console.log(`🗑️ Removing: ${title}`);
+                const success = await removeFavorite(title);
+                console.log(`🗑️ Result for ${title}:`, success ? '✅ Success' : '❌ Failed');
+                return success;
+            });
             
-            await buildAndRender();
+            const results = await Promise.all(removePromises);
+            const successCount = results.filter(success => success).length;
+            console.log(`🗑️ Deletion complete: ${successCount}/${checkedTitles.length} successful`);
+            
+            if (successCount > 0) {
+                console.log('🔄 Refreshing favorites list...');
+                await buildAndRender();
+                alert(`Successfully removed ${successCount} song(s) from favorites!`);
+            } else {
+                alert('Failed to remove songs. Please try again.');
+            }
         };
 
         // --- PROGRESS & TIME UPDATES ---
