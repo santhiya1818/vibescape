@@ -132,13 +132,72 @@
             }
         }
 
-        // --- LOCALSTORAGE HELPERS ---
-        function getFavourites() { return JSON.parse(localStorage.getItem('favourites')) || []; }
-        function setFavourites(arr) { localStorage.setItem('favourites', JSON.stringify(arr)); }
+        // --- DATABASE HELPERS ---
+        async function getFavourites() {
+            const token = sessionStorage.getItem('vibescape-token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return [];
+            }
+            
+            try {
+                const response = await fetch('/api/favorites', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const favorites = await response.json();
+                    // Convert to array of song titles for compatibility
+                    return favorites.map(fav => fav.songTitle);
+                } else if (response.status === 401) {
+                    window.location.href = 'login.html';
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error fetching favorites:', error);
+            }
+            return [];
+        }
+
+        async function removeFavorite(songTitle) {
+            const token = sessionStorage.getItem('vibescape-token');
+            if (!token) return false;
+            
+            try {
+                // Find the song in our library to get artist info
+                const songInfo = songLibrary.find(song => song.title === songTitle);
+                const artist = songInfo ? songInfo.artist : 'Unknown Artist';
+                
+                const response = await fetch('/api/favorites', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        songTitle: songTitle, 
+                        artist: artist 
+                    })
+                });
+                
+                return response.ok;
+            } catch (error) {
+                console.error('Error removing favorite:', error);
+                return false;
+            }
+        }
+
+        function setFavourites(arr) { 
+            // This function is no longer needed as we use the database
+            // Keep it for compatibility but it doesn't do anything
+            console.log('setFavourites called - now using database instead of localStorage');
+        }
 
         // --- RENDER LOGIC ---
-        function buildAndRender() {
-            const favTitles = getFavourites();
+        async function buildAndRender() {
+            const favTitles = await getFavourites();
             
             // Build the display list based on current sort mode
             let baseList = [...favTitles];
@@ -177,7 +236,7 @@
         }
 
         // --- PLAYER CONTROLS ---
-        function playSongByTitle(title) {
+        async function playSongByTitle(title) {
             const songData = allSongs.find(song => song.title === title);
             if (!songData || !songData.file) {
                 alert(`Audio file for "${title}" not found in the library.`);
@@ -185,7 +244,7 @@
                     audioEl.pause();
                     playingTitle = null;
                 }
-                buildAndRender();
+                await buildAndRender();
                 return;
             }
 
@@ -210,32 +269,32 @@
                     }
                 });
             }
-            buildAndRender();
+            await buildAndRender();
         }
 
-        function playNext() {
+        async function playNext() {
             if (displayList.length === 0) return;
             const currentIndex = displayList.findIndex(title => title === playingTitle);
             const nextIndex = (currentIndex + 1) % displayList.length;
-            playSongByTitle(displayList[nextIndex]);
+            await playSongByTitle(displayList[nextIndex]);
         }
 
-        function playPrev() {
+        async function playPrev() {
             if (displayList.length === 0) return;
             const currentIndex = displayList.findIndex(title => title === playingTitle);
             const prevIndex = (currentIndex - 1 + displayList.length) % displayList.length;
-            playSongByTitle(displayList[prevIndex]);
+            await playSongByTitle(displayList[prevIndex]);
         }
         
         // --- EVENT HANDLERS ---
-        listEl.addEventListener('click', (e) => {
+        listEl.addEventListener('click', async (e) => {
             const card = e.target.closest('.favourite-card');
             if (!card) return;
             const title = card.dataset.title;
 
-            if (e.target.closest('.toggle')) playSongByTitle(title);
-            if (e.target.closest('.back-10')) seekRelative(-10, title);
-            if (e.target.closest('.fwd-10')) seekRelative(10, title);
+            if (e.target.closest('.toggle')) await playSongByTitle(title);
+            if (e.target.closest('.back-10')) await seekRelative(-10, title);
+            if (e.target.closest('.fwd-10')) await seekRelative(10, title);
         });
 
         listEl.addEventListener('input', (e) => {
@@ -262,29 +321,32 @@
         
         prevBtn.onclick = playPrev;
         nextBtn.onclick = playNext;
-        toggleBtn.onclick = () => {
+        toggleBtn.onclick = async () => {
             if (playingTitle) {
-                playSongByTitle(playingTitle); // Toggle current song
+                await playSongByTitle(playingTitle); // Toggle current song
             } else if (displayList.length > 0) {
-                playSongByTitle(displayList[0]); // Play first song in the list
+                await playSongByTitle(displayList[0]); // Play first song in the list
             }
         };
 
-        deleteBtn.onclick = () => {
+        deleteBtn.onclick = async () => {
             const checkedTitles = Array.from(listEl.querySelectorAll('.delete-checkbox:checked')).map(cb => cb.dataset.title);
             if (checkedTitles.length === 0) {
                 alert('Select songs to delete.');
                 return;
             }
+            
             if (checkedTitles.includes(playingTitle)) {
                 audioEl.pause();
                 audioEl.removeAttribute('src');
                 playingTitle = null;
             }
-            let favs = getFavourites();
-            favs = favs.filter(title => !checkedTitles.includes(title));
-            setFavourites(favs);
-            buildAndRender();
+
+            // Remove each song from database
+            const removePromises = checkedTitles.map(title => removeFavorite(title));
+            await Promise.all(removePromises);
+            
+            await buildAndRender();
         };
 
         // --- PROGRESS & TIME UPDATES ---
@@ -314,9 +376,9 @@
             toggleBtn.innerHTML = audioEl.paused || !audioEl.src ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
         }
 
-        function seekRelative(delta, title) {
+        async function seekRelative(delta, title) {
             if (playingTitle !== title) {
-                playSongByTitle(title);
+                await playSongByTitle(title);
             } else {
                 audioEl.currentTime = Math.max(0, Math.min(audioEl.currentTime + delta, audioEl.duration));
             }
@@ -331,13 +393,13 @@
 
         audioEl.addEventListener('timeupdate', updateAllProgress);
         audioEl.addEventListener('loadedmetadata', updateAllProgress);
-        audioEl.addEventListener('play', buildAndRender);
-        audioEl.addEventListener('pause', buildAndRender);
+        audioEl.addEventListener('play', async () => await buildAndRender());
+        audioEl.addEventListener('pause', async () => await buildAndRender());
         audioEl.addEventListener('ended', playNext);
         
-        sortSelect.addEventListener('change', () => {
+        sortSelect.addEventListener('change', async () => {
             sortMode = sortSelect.value;
-            buildAndRender();
+            await buildAndRender();
         });
 
         // --- THEME & PROFILE (UPDATED) ---
@@ -378,7 +440,7 @@
 
         // --- INITIALIZATION ---
         await loadSongsFromServer(); // Load the master list first
-        buildAndRender(); // Then render the page
+        await buildAndRender(); // Then render the page
     });
   </script>
   <script src="history-tracker.js"></script>

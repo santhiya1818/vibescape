@@ -87,11 +87,21 @@ const playlistSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
+// Favorite Schema
+const favoriteSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true },
+    songTitle: { type: String, required: true },
+    artist: { type: String, required: true },
+    addedAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', userSchema);
 const Song = mongoose.model('Song', songSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 const History = mongoose.model('History', historySchema);
 const Playlist = mongoose.model('Playlist', playlistSchema);
+const Favorite = mongoose.model('Favorite', favoriteSchema);
 
 // JWT Middleware
 const authenticateToken = (req, res, next) => {
@@ -480,6 +490,108 @@ app.delete('/api/playlists/:id', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error deleting playlist:', error);
         res.status(500).json({ error: 'Failed to delete playlist.' });
+    }
+});
+
+// ===== FAVORITES ENDPOINTS =====
+
+// Get user favorites
+app.get('/api/favorites', authenticateToken, async (req, res) => {
+    console.log('⭐ GET /api/favorites endpoint hit');
+    try {
+        const favorites = await Favorite.find({ userId: req.user.userId })
+            .sort({ addedAt: -1 }); // Sort by newest first
+
+        console.log('⭐ Found favorites:', favorites.length);
+        res.json(favorites);
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+        res.status(500).json({ error: 'Failed to fetch favorites.' });
+    }
+});
+
+// Add song to favorites
+app.post('/api/favorites', authenticateToken, async (req, res) => {
+    console.log('⭐ POST /api/favorites endpoint hit');
+    try {
+        const { songTitle, artist } = req.body;
+        console.log('⭐ Adding to favorites:', songTitle, 'by', artist);
+
+        if (!songTitle || !artist) {
+            return res.status(400).json({ error: 'Song title and artist are required.' });
+        }
+
+        // Check if already in favorites
+        const existingFavorite = await Favorite.findOne({
+            userId: req.user.userId,
+            songTitle: songTitle,
+            artist: artist
+        });
+
+        if (existingFavorite) {
+            return res.status(400).json({ error: 'Song is already in favorites.' });
+        }
+
+        // Add new favorite
+        const favorite = new Favorite({
+            userId: req.user.userId,
+            username: req.user.username,
+            songTitle: songTitle,
+            artist: artist
+        });
+
+        await favorite.save();
+        console.log('✅ Favorite saved to database:', favorite);
+        res.status(201).json(favorite);
+    } catch (error) {
+        console.error('Error adding to favorites:', error);
+        res.status(500).json({ error: 'Failed to add to favorites.' });
+    }
+});
+
+// Remove song from favorites
+app.delete('/api/favorites/:id', authenticateToken, async (req, res) => {
+    try {
+        const favorite = await Favorite.findOne({
+            _id: req.params.id,
+            userId: req.user.userId
+        });
+
+        if (!favorite) {
+            return res.status(404).json({ error: 'Favorite not found.' });
+        }
+
+        await Favorite.deleteOne({ _id: req.params.id });
+        res.json({ message: 'Removed from favorites successfully' });
+    } catch (error) {
+        console.error('Error removing from favorites:', error);
+        res.status(500).json({ error: 'Failed to remove from favorites.' });
+    }
+});
+
+// Remove song from favorites by song details (alternative endpoint)
+app.delete('/api/favorites', authenticateToken, async (req, res) => {
+    try {
+        const { songTitle, artist } = req.body;
+        
+        if (!songTitle || !artist) {
+            return res.status(400).json({ error: 'Song title and artist are required.' });
+        }
+
+        const result = await Favorite.deleteOne({
+            userId: req.user.userId,
+            songTitle: songTitle,
+            artist: artist
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Favorite not found.' });
+        }
+
+        res.json({ message: 'Removed from favorites successfully' });
+    } catch (error) {
+        console.error('Error removing from favorites:', error);
+        res.status(500).json({ error: 'Failed to remove from favorites.' });
     }
 });
 

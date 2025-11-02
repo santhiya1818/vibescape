@@ -174,6 +174,89 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         return {};
     }
+
+    async function getFavorites() {
+        const token = sessionStorage.getItem('vibescape-token');
+        if (!token) return [];
+        
+        try {
+            const response = await fetch('/api/favorites', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const favorites = await response.json();
+                console.log('⭐ Retrieved favorites:', favorites);
+                return favorites;
+            }
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
+        }
+        return [];
+    }
+
+    async function addToFavorites(songTitle, artist) {
+        console.log('⭐ addToFavorites called:', songTitle, 'by', artist);
+        const token = sessionStorage.getItem('vibescape-token');
+        console.log('🔑 Token exists:', !!token);
+        if (!token) {
+            alert('Please login to add favorites');
+            return false;
+        }
+        
+        try {
+            const response = await fetch('/api/favorites', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ 
+                    songTitle: songTitle, 
+                    artist: artist 
+                })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Added to favorites successfully');
+                return true;
+            } else {
+                const errorData = await response.json();
+                console.error('❌ Failed to add to favorites:', errorData.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error adding to favorites:', error);
+            return false;
+        }
+    }
+
+    async function removeFromFavorites(songTitle, artist) {
+        console.log('⭐ removeFromFavorites called:', songTitle, 'by', artist);
+        const token = sessionStorage.getItem('vibescape-token');
+        if (!token) return false;
+        
+        try {
+            const response = await fetch('/api/favorites', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ 
+                    songTitle: songTitle, 
+                    artist: artist 
+                })
+            });
+            
+            return response.ok;
+        } catch (error) {
+            console.error('Error removing from favorites:', error);
+            return false;
+        }
+    }
     
     async function savePlaylists(data) {
         // This function is no longer needed as individual playlist operations
@@ -699,7 +782,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // === SINGLE EVENT LISTENER FOR ALL DYNAMIC CLICKS ===
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
         const genreCard = e.target.closest('.genre-card');
         if (genreCard) {
             displaySongsForGenre(genreCard.getAttribute('data-genre'));
@@ -729,16 +812,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.target.parentElement.style.display = 'none';
         } else if (e.target.matches('.add-to-favourites')) {
             e.stopPropagation();
-            const songTitle = e.target.closest('.track-card').getAttribute('data-title');
-            let favourites = JSON.parse(localStorage.getItem('favourites')) || [];
-            if (!favourites.includes(songTitle)) {
-                favourites.push(songTitle);
-                localStorage.setItem('favourites', JSON.stringify(favourites));
+            const trackCard = e.target.closest('.track-card');
+            const songTitle = trackCard.getAttribute('data-title');
+            const artist = trackCard.getAttribute('data-artist');
+            
+            console.log('⭐ Adding to favorites:', songTitle, 'by', artist);
+            
+            // Disable button during processing
+            e.target.disabled = true;
+            e.target.textContent = "Adding...";
+            
+            const success = await addToFavorites(songTitle, artist);
+            if (success) {
                 e.target.textContent = "Added!";
             } else {
-                e.target.textContent = "Already added";
+                e.target.textContent = "Failed to add";
             }
-            setTimeout(() => e.target.textContent = "Add to Favourites", 1500);
+            
+            setTimeout(() => {
+                e.target.textContent = "Add to Favourites";
+                e.target.disabled = false;
+            }, 1500);
+            
             e.target.parentElement.style.display = 'none';
         }
         const trackCard = e.target.closest('.track-card');
