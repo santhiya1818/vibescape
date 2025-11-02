@@ -1826,6 +1826,16 @@
                     };
                     console.log('Sending delete request with:', requestBody);
                     console.log('Request URL:', '/api/history/delete');
+                    console.log('Full URL will be:', window.location.origin + '/api/history/delete');
+                    
+                    // First test if the test endpoint exists
+                    try {
+                        const testResponse = await fetch('/api/test-delete');
+                        const testResult = await testResponse.text();
+                        console.log('Test endpoint response:', testResponse.status, testResult);
+                    } catch (testError) {
+                        console.log('Test endpoint error:', testError);
+                    }
                     
                     const response = await fetch('/api/history/delete', {
                         method: 'DELETE',
