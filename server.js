@@ -633,7 +633,8 @@ app.post('/api/playlists', async (req, res) => {
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        const { name } = req.body;
+        const { name, songs } = req.body;
+        console.log('📋 Creating playlist:', name, 'with songs:', songs);
 
         if (!name) {
             return res.status(400).json({ error: 'Playlist name is required.' });
@@ -650,10 +651,11 @@ app.post('/api/playlists', async (req, res) => {
             userId: decoded.id,
             username: user.username,
             name: name,
-            songs: []
+            songs: songs || [] // Use provided songs or empty array
         });
 
         await playlist.save();
+        console.log('✅ Playlist saved to database:', playlist);
         res.json(playlist);
     } catch (error) {
         console.error('Error creating playlist:', error);
