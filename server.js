@@ -428,6 +428,39 @@ app.delete('/api/history', async (req, res) => {
     }
 });
 
+// Delete individual history item
+app.delete('/api/history/delete', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const { title, playedAt } = req.body;
+
+        if (!title || !playedAt) {
+            return res.status(400).json({ error: 'Title and playedAt are required.' });
+        }
+
+        // Delete the specific history item
+        const deletedItem = await History.findOneAndDelete({
+            userId: decoded.id,
+            songTitle: title,
+            playedAt: new Date(playedAt)
+        });
+
+        if (!deletedItem) {
+            return res.status(404).json({ error: 'History item not found.' });
+        }
+
+        res.json({ message: 'History item deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting history item:', error);
+        res.status(500).json({ error: 'Failed to delete history item.' });
+    }
+});
+
 // --- START SERVER ---
 app.listen(port, () => {
     console.log(`VibeScape server running on port ${port}!`);

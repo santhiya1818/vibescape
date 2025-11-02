@@ -15,8 +15,9 @@
       --text-color: #ffffff;
       --card-bg: #1a1a1a;
       --border-color: rgba(255,255,255,0.1);
-      --accent: #e91e63;
+      --primary: #e91e63;
       --secondary: #ff6b9d;
+      --accent: #e91e63;
       --delete-color: #ff4757;
       --success-color: #2ed573;
       --gradient-1: linear-gradient(135deg, #e91e63, #ff6b9d);
@@ -31,8 +32,9 @@
       --text-color: #2c3e50;
       --card-bg: #ffffff;
       --border-color: rgba(0,0,0,0.1);
-      --accent: #e91e63;
+      --primary: #e91e63;
       --secondary: #ff6b9d;
+      --accent: #e91e63;
       --delete-color: #e74c3c;
       --success-color: #27ae60;
       --gradient-1: linear-gradient(135deg, #e91e63, #ff6b9d);
@@ -877,6 +879,27 @@
       transform: translateY(-1px);
     }
 
+    .delete-btn {
+      background: var(--card);
+      border: 2px solid var(--delete-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--delete-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .delete-btn:hover {
+      background: var(--delete-color);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    }
+
     .favorite-btn {
       background: transparent;
       border: none;
@@ -1434,12 +1457,34 @@
                         downloadSong(songData.file, historyEntry.songTitle, historyEntry.artist);
                     };
                     songActions.appendChild(downloadBtn);
+
+                    // Add delete button
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                    deleteBtn.title = 'Remove from History';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteFromHistory(historyEntry, item);
+                    };
+                    songActions.appendChild(deleteBtn);
                 } else {
                     const unavailableMsg = document.createElement('div');
                     unavailableMsg.className = 'unavailable-msg';
                     unavailableMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Song no longer available';
                     songActions.appendChild(unavailableMsg);
                     item.classList.add('unavailable');
+
+                    // Add delete button even for unavailable songs
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                    deleteBtn.title = 'Remove from History';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteFromHistory(historyEntry, item);
+                    };
+                    songActions.appendChild(deleteBtn);
                 }
 
                 // Add favorite button
@@ -1729,6 +1774,66 @@
                 console.log(`${isFavorite ? 'Added' : 'Removed'} favorite: ${songTitle}`);
             } catch (error) {
                 console.error('Failed to save favorite:', error);
+            }
+        }
+
+        // Delete individual song from history
+        async function deleteFromHistory(historyEntry, itemElement) {
+            if (confirm(`Are you sure you want to remove "${historyEntry.songTitle}" from your history?`)) {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch('/api/history/delete', {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            songTitle: historyEntry.songTitle,
+                            playedAt: historyEntry.playedAt
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Remove from local history array
+                        const index = history.findIndex(h => 
+                            h.songTitle === historyEntry.songTitle && 
+                            h.playedAt === historyEntry.playedAt
+                        );
+                        if (index > -1) {
+                            history.splice(index, 1);
+                        }
+
+                        // Add fade out animation
+                        itemElement.style.transition = 'all 0.3s ease';
+                        itemElement.style.transform = 'translateX(-100%)';
+                        itemElement.style.opacity = '0';
+                        
+                        // Remove element after animation
+                        setTimeout(() => {
+                            if (itemElement.parentNode) {
+                                itemElement.parentNode.removeChild(itemElement);
+                            }
+                            // Update stats after deletion
+                            updateStats();
+                            
+                            // Check if history is empty and show empty state
+                            if (history.length === 0) {
+                                document.getElementById('history-list').style.display = 'none';
+                                document.getElementById('empty-state').style.display = 'block';
+                                document.getElementById('clear-history').style.display = 'none';
+                            }
+                        }, 300);
+
+                        showNotification(`Removed "${historyEntry.songTitle}" from history`, 'success');
+                    } else {
+                        console.error('Failed to delete from history:', await response.text());
+                        showNotification('Failed to remove song from history. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting from history:', error);
+                    showNotification('An error occurred while removing the song.', 'error');
+                }
             }
         }
 
