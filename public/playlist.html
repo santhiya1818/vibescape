@@ -231,7 +231,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
         let allSongs = []; // This will hold the entire song library from the server
-        let playlists = JSON.parse(localStorage.getItem('playlists')) || {};
+        let playlists = {}; // Will be loaded from server
         let currentPlaylist = null;
         let currentPlaylistSongs = []; // The currently displayed (and possibly sorted) list
         let playingIndex = null;
@@ -247,6 +247,27 @@
         const togglePlayBtn = document.getElementById('toggle-play');
         const themeToggleBtn = document.getElementById('theme-toggle');
 
+        // Get auth token
+        function getAuthToken() {
+            return sessionStorage.getItem('vibescape-token');
+        }
+
+        // Check if user is logged in
+        function checkAuthAndRedirect() {
+            const token = getAuthToken();
+            if (!token) {
+                alert('Please login to view your playlists.');
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Check authentication first
+        if (!checkAuthAndRedirect()) {
+            return;
+        }
+
         // Fetch the complete song library from the server
         async function loadSongsFromServer() {
             try {
@@ -257,6 +278,65 @@
             } catch (error) {
                 console.error("Could not load song library:", error);
                 playlistSongsDiv.innerHTML = '<div class="error">Could not load song library from server.</div>';
+            }
+        }
+
+        // Load playlists from server
+        async function loadPlaylistsFromServer() {
+            try {
+                const token = getAuthToken();
+                const response = await fetch('/api/playlists', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch playlists');
+                
+                const playlistArray = await response.json();
+                // Convert array to object format for compatibility
+                playlists = {};
+                playlistArray.forEach(playlist => {
+                    playlists[playlist.name] = {
+                        songs: playlist.songs,
+                        _id: playlist._id
+                    };
+                });
+                
+                console.log(`Successfully loaded ${playlistArray.length} playlists from server.`);
+                renderPlaylistButtons();
+            } catch (error) {
+                console.error("Could not load playlists:", error);
+                playlists = {};
+                renderPlaylistButtons();
+            }
+        }
+
+        // Save playlist to server
+        async function savePlaylistToServer(playlistName, songs) {
+            try {
+                const token = getAuthToken();
+                const playlistId = playlists[playlistName]._id;
+                
+                const response = await fetch(`/api/playlists/${playlistId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ songs })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save playlist');
+                }
+                
+                console.log(`Playlist "${playlistName}" saved to server`);
+                return true;
+            } catch (error) {
+                console.error('Error saving playlist:', error);
+                alert('Failed to save playlist changes. Please try again.');
+                return false;
             }
         }
 
@@ -294,14 +374,32 @@
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-playlist-btn';
                 delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                delBtn.onclick = (e) => {
+                delBtn.onclick = async (e) => {
                     e.stopPropagation();
                     if (confirm(`Are you sure you want to delete the playlist "${name}"?`)) {
-                        delete playlists[name];
-                        localStorage.setItem('playlists', JSON.stringify(playlists));
-                        if (currentPlaylist === name) currentPlaylist = null;
-                        renderPlaylistButtons();
-                        renderPlaylistSongs();
+                        try {
+                            const playlistId = playlists[name]._id;
+                            const token = getAuthToken();
+                            const response = await fetch(`/api/playlists/${playlistId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                delete playlists[name];
+                                if (currentPlaylist === name) currentPlaylist = null;
+                                renderPlaylistButtons();
+                                renderPlaylistSongs();
+                            } else {
+                                console.error('Failed to delete playlist');
+                                alert('Failed to delete playlist. Please try again.');
+                            }
+                        } catch (error) {
+                            console.error('Error deleting playlist:', error);
+                            alert('Error occurred while deleting playlist.');
+                        }
                     }
                 };
                 wrapper.appendChild(delBtn);
@@ -311,14 +409,14 @@
 
         function renderPlaylistSongs() {
             playlistSongsDiv.innerHTML = '';
-            if (!currentPlaylist || !playlists[currentPlaylist] || playlists[currentPlaylist].length === 0) {
+            if (!currentPlaylist || !playlists[currentPlaylist] || !playlists[currentPlaylist].songs || playlists[currentPlaylist].songs.length === 0) {
                 playlistSongsDiv.innerHTML = '<div class="no-songs">This playlist is empty.</div>';
                 deleteBtn.style.display = 'none';
                 currentPlaylistSongs = [];
                 return;
             }
 
-            let songTitles = [...playlists[currentPlaylist]];
+            let songTitles = [...playlists[currentPlaylist].songs];
             if (sortSelect.value === 'asc') songTitles.sort((a, b) => a.localeCompare(b));
             if (sortSelect.value === 'desc') songTitles.sort((a, b) => b.localeCompare(a));
             
@@ -462,7 +560,7 @@
         audioPlayer.addEventListener('ended', () => document.getElementById('next-song').click());
         togglePlayBtn.onclick = togglePlayPause;
         
-        deleteBtn.onclick = function() {
+        deleteBtn.onclick = async function() {
             const toDeleteTitles = [];
             playlistSongsDiv.querySelectorAll('.delete-checkbox:checked').forEach(cb => {
                 toDeleteTitles.push(cb.dataset.songTitle);
@@ -472,13 +570,18 @@
                 return;
             }
             // Filter out the songs to be deleted
-            playlists[currentPlaylist] = playlists[currentPlaylist].filter(song => !toDeleteTitles.includes(song));
-            localStorage.setItem('playlists', JSON.stringify(playlists));
-            playingIndex = null; // Reset player
-            audioPlayer.pause();
-            audioPlayer.src = '';
-            renderPlaylistSongs();
-            renderPlaylistButtons();
+            const updatedSongs = playlists[currentPlaylist].songs.filter(song => !toDeleteTitles.includes(song));
+            
+            // Save to server
+            const success = await savePlaylistToServer(currentPlaylist, updatedSongs);
+            if (success) {
+                playlists[currentPlaylist].songs = updatedSongs;
+                playingIndex = null; // Reset player
+                audioPlayer.pause();
+                audioPlayer.src = '';
+                renderPlaylistSongs();
+                renderPlaylistButtons();
+            }
         };
 
         sortSelect.onchange = renderPlaylistSongs;
@@ -522,9 +625,9 @@
         });
         
         // --- INITIALIZATION ---
-        await loadSongsFromServer(); // First, load the song library
-        renderPlaylistButtons();      // Then, render the buttons
-        renderPlaylistSongs();        // Finally, render the songs for the default playlist
+        await loadSongsFromServer();     // First, load the song library
+        await loadPlaylistsFromServer(); // Then, load playlists from server
+        renderPlaylistSongs();           // Finally, render the songs for the default playlist
     });
   </script>
   <script src="history-tracker.js"></script>

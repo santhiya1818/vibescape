@@ -98,6 +98,17 @@ const favoriteSchema = new mongoose.Schema({
 });
 const Favorite = mongoose.model('Favorite', favoriteSchema);
 
+// Playlist Schema for user playlists
+const playlistSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true },
+    name: { type: String, required: true },
+    songs: [{ type: String }], // Array of song titles
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+const Playlist = mongoose.model('Playlist', playlistSchema);
+
 // Multer Setup
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -577,6 +588,120 @@ app.get('/api/favorites', async (req, res) => {
     } catch (error) {
         console.error('Error fetching favorites:', error);
         res.status(500).json({ error: 'Failed to fetch favorites.' });
+    }
+});
+
+// ===== PLAYLIST ENDPOINTS =====
+
+// Get user playlists
+app.get('/api/playlists', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const playlists = await Playlist.find({ userId: decoded.id }).sort({ updatedAt: -1 });
+
+        res.json(playlists);
+    } catch (error) {
+        console.error('Error fetching playlists:', error);
+        res.status(500).json({ error: 'Failed to fetch playlists.' });
+    }
+});
+
+// Create new playlist
+app.post('/api/playlists', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const { name } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: 'Playlist name is required.' });
+        }
+
+        // Get user info
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Create new playlist
+        const playlist = new Playlist({
+            userId: decoded.id,
+            username: user.username,
+            name: name,
+            songs: []
+        });
+
+        await playlist.save();
+        res.json(playlist);
+    } catch (error) {
+        console.error('Error creating playlist:', error);
+        res.status(500).json({ error: 'Failed to create playlist.' });
+    }
+});
+
+// Update playlist (add/remove songs)
+app.put('/api/playlists/:id', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const { songs } = req.body;
+
+        const playlist = await Playlist.findOne({ 
+            _id: req.params.id, 
+            userId: decoded.id 
+        });
+
+        if (!playlist) {
+            return res.status(404).json({ error: 'Playlist not found.' });
+        }
+
+        playlist.songs = songs;
+        playlist.updatedAt = new Date();
+        await playlist.save();
+
+        res.json(playlist);
+    } catch (error) {
+        console.error('Error updating playlist:', error);
+        res.status(500).json({ error: 'Failed to update playlist.' });
+    }
+});
+
+// Delete playlist
+app.delete('/api/playlists/:id', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+
+        const deletedPlaylist = await Playlist.findOneAndDelete({
+            _id: req.params.id,
+            userId: decoded.id
+        });
+
+        if (!deletedPlaylist) {
+            return res.status(404).json({ error: 'Playlist not found.' });
+        }
+
+        res.json({ message: 'Playlist deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting playlist:', error);
+        res.status(500).json({ error: 'Failed to delete playlist.' });
     }
 });
 
