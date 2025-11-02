@@ -146,14 +146,87 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // === PLAYLISTS & FAVOURITES HELPER FUNCTIONS ===
-    function getPlaylists() {
-        return JSON.parse(localStorage.getItem('playlists')) || {};
+    async function getPlaylists() {
+        const token = sessionStorage.getItem('vibescape-token');
+        if (!token) return {};
+        
+        try {
+            const response = await fetch('/api/playlists', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const playlists = await response.json();
+                // Convert array to object for compatibility
+                const playlistObj = {};
+                playlists.forEach(playlist => {
+                    playlistObj[playlist.name] = {
+                        songs: playlist.songs,
+                        id: playlist._id
+                    };
+                });
+                return playlistObj;
+            }
+        } catch (error) {
+            console.error('Error fetching playlists:', error);
+        }
+        return {};
     }
-    function savePlaylists(data) {
-        localStorage.setItem('playlists', JSON.stringify(data));
+    
+    async function savePlaylists(data) {
+        // This function is no longer needed as individual playlist operations
+        // will be handled by savePlaylistToServer
+        console.log('Use savePlaylistToServer for individual playlist operations');
     }
-    function selectPlaylistAndAdd(songTitle) {
-        let playlists = getPlaylists();
+    
+    async function savePlaylistToServer(playlistName, songs) {
+        const token = sessionStorage.getItem('vibescape-token');
+        if (!token) {
+            alert('Please login to save playlists');
+            return false;
+        }
+        
+        try {
+            // Get existing playlists to check if this playlist exists
+            const existingPlaylists = await getPlaylists();
+            const existingPlaylist = existingPlaylists[playlistName];
+            
+            if (existingPlaylist && existingPlaylist.id) {
+                // Update existing playlist
+                const response = await fetch(`/api/playlists/${existingPlaylist.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ songs })
+                });
+                return response.ok;
+            } else {
+                // Create new playlist
+                const response = await fetch('/api/playlists', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        name: playlistName, 
+                        songs 
+                    })
+                });
+                return response.ok;
+            }
+        } catch (error) {
+            console.error('Error saving playlist:', error);
+            return false;
+        }
+    }
+    
+    async function selectPlaylistAndAdd(songTitle) {
+        let playlists = await getPlaylists();
         let playlistNames = Object.keys(playlists);
         let playlist = prompt(
             playlistNames.length > 0
@@ -162,11 +235,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
         if (!playlist) return;
         playlist = playlist.trim();
-        if (!playlists[playlist]) playlists[playlist] = [];
-        if (!playlists[playlist].includes(songTitle)) {
-            playlists[playlist].push(songTitle);
-            savePlaylists(playlists);
-            alert(`Added "${songTitle}" to playlist "${playlist}".`);
+        
+        // Get current songs for this playlist
+        let currentSongs = playlists[playlist] ? playlists[playlist].songs || [] : [];
+        
+        if (!currentSongs.includes(songTitle)) {
+            currentSongs.push(songTitle);
+            const success = await savePlaylistToServer(playlist, currentSongs);
+            if (success) {
+                alert(`Added "${songTitle}" to playlist "${playlist}".`);
+            } else {
+                alert('Failed to save playlist. Please check your connection and try again.');
+            }
         } else {
             alert(`"${songTitle}" is already in "${playlist}".`);
         }
