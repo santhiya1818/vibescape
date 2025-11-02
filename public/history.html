@@ -1308,11 +1308,28 @@
                 const songImage = document.createElement('div');
                 songImage.className = 'song-image';
                 
-                // Try to find song picture
-                const imageName = historyEntry.songTitle.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+                // Create a mapping for song titles to image names
+                const imageMap = {
+                    'rasputin': 'rasputin',
+                    'fairytale': 'fairytale', 
+                    'run bullet proof': 'bangbangbang',
+                    'bang bang bang': 'bangbangbang',
+                    'skyfall': 'skyfall',
+                    'loro': 'loro',
+                    'matushka': 'matushka',
+                    'antifragile': 'antifragile',
+                    'shoot to thrill': 'shoot to thrill',
+                    'smart': 'smart',
+                    'pink venom': 'pinkvenom'
+                };
+                
+                // Try to find song picture with mapping
+                const songKey = historyEntry.songTitle.toLowerCase();
+                const imageName = imageMap[songKey] || historyEntry.songTitle.toLowerCase().replace(/\s+/g, '').replace(/[^\w]/g, '');
+                
                 songImage.innerHTML = `
-                    <img src="songpic/${imageName}.jpg" alt="${historyEntry.songTitle}" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="songpic/${imageName}.png" alt="${historyEntry.songTitle}" 
+                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="default-image" style="display:none;">
                         <i class="fas fa-music"></i>
                     </div>
@@ -1347,8 +1364,22 @@
                             playButton.innerHTML = '<i class="fas fa-pause"></i>';
                             
                             // Set global player
-                            const imageName = historyEntry.songTitle.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
-                            const imageSrc = `songpic/${imageName}.jpg`;
+                            const imageMap = {
+                                'rasputin': 'rasputin',
+                                'fairytale': 'fairytale', 
+                                'run bullet proof': 'bangbangbang',
+                                'bang bang bang': 'bangbangbang',
+                                'skyfall': 'skyfall',
+                                'loro': 'loro',
+                                'matushka': 'matushka',
+                                'antifragile': 'antifragile',
+                                'shoot to thrill': 'shoot to thrill',
+                                'smart': 'smart',
+                                'pink venom': 'pinkvenom'
+                            };
+                            const songKey = historyEntry.songTitle.toLowerCase();
+                            const imageName = imageMap[songKey] || historyEntry.songTitle.toLowerCase().replace(/\s+/g, '').replace(/[^\w]/g, '');
+                            const imageSrc = `songpic/${imageName}.png`;
                             setGlobalPlayer(audio, historyEntry.songTitle, historyEntry.artist, imageSrc);
                         } else {
                             audio.pause();
