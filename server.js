@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 3030;
 
 // JWT Secret key
-const JWT_SECRET = process.env.JWT_SECRET || JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'vibescape-default-secret-key';
 
 // Middleware
 app.use(express.json()); 
