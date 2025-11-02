@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- PASSWORD VISIBILITY TOGGLES ---
-    const toggleButtons = document.querySelectorAll('.toggle-password');
+    const toggleButtons = document.querySelectorAll('.password-toggle');
     toggleButtons.forEach(button => {
         button.addEventListener('click', () => {
             const input = document.getElementById(button.dataset.target);
