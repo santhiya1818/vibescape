@@ -262,7 +262,7 @@
 
         // --- INITIALIZATION ---
         await loadSongsFromServer(); // First, load the master song library
-        renderHistory();             // Then, render the history list
+        await loadHistoryFromServer(); // Then, load the user's history from database
     });
   </script>
 </body>
