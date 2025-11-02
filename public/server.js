@@ -336,6 +336,30 @@ app.post('/api/comments', authenticateToken, async (req, res) => {
     }
 });
 
+// Delete comment API (Only the user who created it or admin can delete)
+app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Find the comment first to check ownership
+        const comment = await Comment.findById(id);
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+        
+        // Allow deletion if user is the owner or an admin
+        if (comment.username !== req.user.username && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'You can only delete your own comments' });
+        }
+        
+        await Comment.findByIdAndDelete(id);
+        res.json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ error: 'Failed to delete comment' });
+    }
+});
+
 // History API
 app.get('/api/history', authenticateToken, async (req, res) => {
     try {
