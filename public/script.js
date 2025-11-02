@@ -34,13 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const themeToggle = document.getElementById('theme-toggle');
     const applyTheme = (theme) => {
-        document.body.classList.toggle('light-mode', theme === 'light');
+        document.body.classList.toggle('light-theme', theme === 'light');
         const icon = themeToggle ? themeToggle.querySelector('i') : null;
         if (icon) icon.classList.toggle('fa-moon', theme === 'light');
         if (icon) icon.classList.toggle('fa-sun', theme !== 'light');
     };
     const toggleTheme = () => {
-        const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+        const newTheme = document.body.classList.contains('light-theme') ? 'dark' : 'light';
         localStorage.setItem('vibescape-theme', newTheme);
         applyTheme(newTheme);
     };
