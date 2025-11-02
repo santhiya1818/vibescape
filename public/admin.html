@@ -159,7 +159,12 @@
 
         <!-- Songs Management -->
         <div class="songs-management">
-            <h2>🎵 Manage Songs</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>🎵 Manage Songs</h2>
+                <button onclick="clearAllSongs()" class="delete-btn" style="background: #dc3545; padding: 10px 20px; font-size: 14px;">
+                    <i class="fa-solid fa-trash-can"></i> Clear All Songs
+                </button>
+            </div>
             <div id="songsList">
                 <div class="loading">Loading songs...</div>
             </div>
@@ -252,6 +257,58 @@
             } catch (error) {
                 console.error('Delete error:', error);
                 showMessage(`Delete failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Global clearAllSongs function
+        async function clearAllSongs() {
+            const confirmation = confirm('⚠️ WARNING: This will permanently delete ALL songs from the database!\n\nThis action cannot be undone. Are you absolutely sure?');
+            
+            if (!confirmation) {
+                return;
+            }
+            
+            const doubleConfirmation = confirm('🚨 FINAL WARNING: You are about to delete ALL songs!\n\nType "DELETE ALL" in the next prompt to confirm.');
+            
+            if (!doubleConfirmation) {
+                return;
+            }
+            
+            const finalConfirmation = prompt('Type "DELETE ALL" to confirm deletion of all songs:');
+            
+            if (finalConfirmation !== 'DELETE ALL') {
+                showMessage('Deletion cancelled. You must type "DELETE ALL" exactly.', 'error');
+                return;
+            }
+            
+            try {
+                const token = sessionStorage.getItem('vibescape-token');
+                
+                if (!token) {
+                    showMessage('No authentication token found. Please login again.', 'error');
+                    return;
+                }
+                
+                console.log('Making DELETE request to clear all songs');
+                const response = await fetch('/api/songs/clear-all', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`All songs deleted successfully! (${result.deletedCount} songs removed)`, 'success');
+                    loadSongs();
+                } else {
+                    showMessage(result.error || 'Failed to clear all songs', 'error');
+                }
+            } catch (error) {
+                console.error('Clear all songs error:', error);
+                showMessage(`Failed to clear all songs: ${error.message}`, 'error');
             }
         }
 

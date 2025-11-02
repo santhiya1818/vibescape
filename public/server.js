@@ -65,6 +65,7 @@ const songSchema = new mongoose.Schema({
     artist: { type: String, required: true },
     file: { type: String, required: true },
     genre: { type: String, default: 'Unknown' },
+    emotion: { type: String, default: 'Unknown' },
     image: String,
     albumArt: String,
     artistImage: String,
@@ -300,7 +301,7 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
     { name: 'artistImage', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, artist, genre } = req.body;
+        const { title, artist, genre, emotion } = req.body;
         
         if (!title || !artist) {
             return res.status(400).json({ error: 'Title and artist are required' });
@@ -312,6 +313,7 @@ app.post('/api/upload', authenticateToken, requireAdmin, upload.fields([
             title,
             artist,
             genre: genre || 'Unknown',
+            emotion: emotion || 'Unknown',
             file: `/songs/${title.replace(/\s+/g, '_')}.mp3`, // Mock file path
             image: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
             albumArt: req.files.albumArt ? `/songpic/${title.replace(/\s+/g, '_')}.jpg` : '/songpic/default.jpg',
@@ -344,6 +346,25 @@ app.delete('/api/songs/:id', authenticateToken, requireAdmin, async (req, res) =
     } catch (error) {
         console.error('Delete error:', error);
         res.status(500).json({ error: 'Failed to delete song' });
+    }
+});
+
+// Clear all songs API (Admin only)
+app.delete('/api/songs/clear-all', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        console.log('Clear all songs request received');
+        console.log('User making request:', req.user);
+        
+        const result = await Song.deleteMany({});
+        console.log(`All songs cleared successfully. Deleted count: ${result.deletedCount}`);
+        
+        res.json({ 
+            message: 'All songs deleted successfully', 
+            deletedCount: result.deletedCount 
+        });
+    } catch (error) {
+        console.error('Clear all songs error:', error);
+        res.status(500).json({ error: 'Failed to clear all songs' });
     }
 });
 
