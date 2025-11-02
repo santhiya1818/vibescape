@@ -266,6 +266,21 @@
             }
         }
 
+        // Global updateStats function
+        function updateStats(songs) {
+            const totalSongs = songs.length;
+            const uniqueArtists = [...new Set(songs.map(song => song.artist))].length;
+            const uniqueGenres = [...new Set(songs.map(song => song.genre || 'Unknown'))].length;
+            
+            const totalSongsEl = document.getElementById('total-songs');
+            const totalArtistsEl = document.getElementById('total-artists');
+            const totalGenresEl = document.getElementById('total-genres');
+            
+            if (totalSongsEl) totalSongsEl.textContent = totalSongs;
+            if (totalArtistsEl) totalArtistsEl.textContent = uniqueArtists;
+            if (totalGenresEl) totalGenresEl.textContent = uniqueGenres;
+        }
+
         // Global loadSongs function
         async function loadSongs() {
             try {
@@ -349,16 +364,6 @@
 
         const uploadForm = document.getElementById('uploadForm');
         const uploadBtn = document.getElementById('uploadBtn');
-
-        // Update statistics
-        function updateStats(songs) {
-            const totalSongs = songs.length;
-            const uniqueArtists = [...new Set(songs.map(song => song.artist))].length;
-            const uniqueGenres = [...new Set(songs.map(song => song.genre || 'Unknown'))].length;
-            document.getElementById('total-songs').textContent = totalSongs;
-            document.getElementById('total-artists').textContent = uniqueArtists;
-            document.getElementById('total-genres').textContent = uniqueGenres;
-        }
 
         // Upload form submission
         uploadForm.addEventListener('submit', async (e) => {
