@@ -89,6 +89,15 @@ const historySchema = new mongoose.Schema({
 });
 const History = mongoose.model('History', historySchema);
 
+// Favorites Schema for user favorite songs
+const favoriteSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true },
+    songTitle: { type: String, required: true },
+    addedAt: { type: Date, default: Date.now }
+});
+const Favorite = mongoose.model('Favorite', favoriteSchema);
+
 // Multer Setup
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -458,6 +467,104 @@ app.delete('/api/history/delete', async (req, res) => {
     } catch (error) {
         console.error('Error deleting history item:', error);
         res.status(500).json({ error: 'Failed to delete history item.' });
+    }
+});
+
+// ===== FAVORITES ENDPOINTS =====
+
+// Add song to favorites
+app.post('/api/favorites', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const { songTitle } = req.body;
+
+        if (!songTitle) {
+            return res.status(400).json({ error: 'Song title is required.' });
+        }
+
+        // Check if already in favorites
+        const existingFavorite = await Favorite.findOne({
+            userId: decoded.id,
+            songTitle: songTitle
+        });
+
+        if (existingFavorite) {
+            return res.status(400).json({ error: 'Song already in favorites.' });
+        }
+
+        // Get user info
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Add to favorites
+        const favorite = new Favorite({
+            userId: decoded.id,
+            username: user.username,
+            songTitle: songTitle
+        });
+
+        await favorite.save();
+        res.json({ message: 'Added to favorites successfully.' });
+    } catch (error) {
+        console.error('Error adding to favorites:', error);
+        res.status(500).json({ error: 'Failed to add to favorites.' });
+    }
+});
+
+// Remove song from favorites
+app.delete('/api/favorites/remove', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const { songTitle } = req.body;
+
+        if (!songTitle) {
+            return res.status(400).json({ error: 'Song title is required.' });
+        }
+
+        // Remove from favorites
+        const deletedFavorite = await Favorite.findOneAndDelete({
+            userId: decoded.id,
+            songTitle: songTitle
+        });
+
+        if (!deletedFavorite) {
+            return res.status(404).json({ error: 'Song not found in favorites.' });
+        }
+
+        res.json({ message: 'Removed from favorites successfully.' });
+    } catch (error) {
+        console.error('Error removing from favorites:', error);
+        res.status(500).json({ error: 'Failed to remove from favorites.' });
+    }
+});
+
+// Get user favorites
+app.get('/api/favorites', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const favorites = await Favorite.find({ userId: decoded.id }).sort({ addedAt: -1 });
+
+        res.json(favorites);
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+        res.status(500).json({ error: 'Failed to fetch favorites.' });
     }
 });
 

@@ -1625,6 +1625,35 @@
             saveFavoriteToBackend(songTitle, !isCurrentlyFavorite);
         }
 
+        // Save favorite to backend
+        async function saveFavoriteToBackend(songTitle, isFavorite) {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) {
+                    showNotification('Please login to save favorites', 'error');
+                    return;
+                }
+
+                const response = await fetch(isFavorite ? '/api/favorites' : '/api/favorites/remove', {
+                    method: isFavorite ? 'POST' : 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ songTitle })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to ${isFavorite ? 'add to' : 'remove from'} favorites`);
+                }
+
+                console.log(`Successfully ${isFavorite ? 'added to' : 'removed from'} favorites:`, songTitle);
+            } catch (error) {
+                console.error('Error saving favorite:', error);
+                showNotification(`Failed to ${isFavorite ? 'add to' : 'remove from'} favorites`, 'error');
+            }
+        }
+
         // Global Play Bar functionality
         let currentGlobalAudio = null;
         let currentSongData = null;
@@ -1789,7 +1818,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            songTitle: historyEntry.songTitle,
+                            title: historyEntry.songTitle,
                             playedAt: historyEntry.playedAt
                         })
                     });
