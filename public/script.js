@@ -230,12 +230,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Store the token and user info
                     sessionStorage.setItem('vibescape-token', result.token);
-                    sessionStorage.setItem('vibescape-user', result.username);
-                    sessionStorage.setItem('vibescape-role', result.role);
+                    sessionStorage.setItem('token', result.token); // Also store as 'token' for compatibility
+                    sessionStorage.setItem('vibescape-user', result.user.username);
+                    sessionStorage.setItem('vibescape-role', result.user.role);
 
                     // Redirect based on user role
                     setTimeout(() => {
-                        if (result.role === 'admin') {
+                        if (result.user.role === 'admin') {
                             window.location.href = '/admin.html';
                         } else {
                             window.location.href = '/home.html';

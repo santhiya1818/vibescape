@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 try {
-                    const response = await fetch('/api/login', {
+                    const response = await fetch('/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password })
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 try {
-                    const response = await fetch('/api/register', {
+                    const response = await fetch('/api/auth/register', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, email, password })
