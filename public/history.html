@@ -1628,7 +1628,7 @@
         // Save favorite to backend
         async function saveFavoriteToBackend(songTitle, isFavorite) {
             try {
-                const token = sessionStorage.getItem('token');
+                const token = getAuthToken();
                 if (!token) {
                     showNotification('Please login to save favorites', 'error');
                     return;
@@ -1795,35 +1795,34 @@
             }, 3000);
         }
 
-        // Save favorite to backend (placeholder)
-        async function saveFavoriteToBackend(songTitle, isFavorite) {
-            try {
-                const token = sessionStorage.getItem('token');
-                // Implement API call to save favorites
-                console.log(`${isFavorite ? 'Added' : 'Removed'} favorite: ${songTitle}`);
-            } catch (error) {
-                console.error('Failed to save favorite:', error);
-            }
-        }
-
         // Delete individual song from history
         async function deleteFromHistory(historyEntry, itemElement) {
+            console.log('Delete function called for:', historyEntry.songTitle);
+            
             if (confirm(`Are you sure you want to remove "${historyEntry.songTitle}" from your history?`)) {
                 try {
-                    const token = sessionStorage.getItem('token');
+                    const token = getAuthToken();
+                    console.log('Token retrieved:', token ? 'Found' : 'Not found');
+                    
+                    const requestBody = {
+                        title: historyEntry.songTitle,
+                        playedAt: historyEntry.playedAt
+                    };
+                    console.log('Sending delete request with:', requestBody);
+                    
                     const response = await fetch('/api/history/delete', {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            title: historyEntry.songTitle,
-                            playedAt: historyEntry.playedAt
-                        })
+                        body: JSON.stringify(requestBody)
                     });
 
+                    console.log('Response status:', response.status);
+                    
                     if (response.ok) {
+                        console.log('Delete successful, updating UI');
                         // Remove from local history array
                         const index = history.findIndex(h => 
                             h.songTitle === historyEntry.songTitle && 
@@ -1856,13 +1855,16 @@
 
                         showNotification(`Removed "${historyEntry.songTitle}" from history`, 'success');
                     } else {
-                        console.error('Failed to delete from history:', await response.text());
+                        const errorText = await response.text();
+                        console.error('Failed to delete from history:', response.status, errorText);
                         showNotification('Failed to remove song from history. Please try again.', 'error');
                     }
                 } catch (error) {
                     console.error('Error deleting from history:', error);
                     showNotification('An error occurred while removing the song.', 'error');
                 }
+            } else {
+                console.log('Delete cancelled by user');
             }
         }
 
@@ -1872,7 +1874,7 @@
         clearBtn.onclick = async () => {
             if (confirm('Are you sure you want to clear your entire listening history?')) {
                 try {
-                    const token = sessionStorage.getItem('token');
+                    const token = getAuthToken();
                     const response = await fetch('/api/history', {
                         method: 'DELETE',
                         headers: {
