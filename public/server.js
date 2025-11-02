@@ -24,16 +24,23 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vibesc
 const JWT_SECRET = process.env.JWT_SECRET || 'vibescape-fallback-secret-key';
 
 console.log('Attempting to connect to MongoDB...');
+
+// For development, let's add a fallback if MongoDB is not available
+let mongoConnected = false;
+
 mongoose.connect(MONGODB_URI)
     .then(() => {
         console.log('✅ Connected to MongoDB successfully');
         console.log('Database URI:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
+        mongoConnected = true;
     })
     .catch(err => {
         console.error('❌ MongoDB connection error:', err.message);
         console.log('💡 Make sure MongoDB is running locally or update MONGODB_URI in .env file');
         console.log('   For local MongoDB: mongodb://localhost:27017/vibescape');
         console.log('   For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/vibescape');
+        console.log('⚠️  Server will continue running but database features will be limited');
+        mongoConnected = false;
     });
 
 // User Schema
@@ -70,10 +77,21 @@ const historySchema = new mongoose.Schema({
     playedAt: { type: Date, default: Date.now }
 });
 
+// Playlist Schema
+const playlistSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true },
+    name: { type: String, required: true },
+    songs: [{ type: String }], // Array of song titles
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', userSchema);
 const Song = mongoose.model('Song', songSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 const History = mongoose.model('History', historySchema);
+const Playlist = mongoose.model('Playlist', playlistSchema);
 
 // JWT Middleware
 const authenticateToken = (req, res, next) => {
@@ -357,6 +375,111 @@ app.delete('/api/history', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error clearing history:', error);
         res.status(500).json({ error: 'Failed to clear history' });
+    }
+});
+
+// ===== PLAYLIST ENDPOINTS =====
+
+// Test endpoint for debugging
+app.get('/api/test', (req, res) => {
+    console.log('🧪 Test endpoint hit - Playlist API');
+    res.json({ 
+        message: 'Playlist endpoints are available', 
+        timestamp: new Date(),
+        endpoints: [
+            'GET /api/playlists',
+            'POST /api/playlists', 
+            'PUT /api/playlists/:id',
+            'DELETE /api/playlists/:id'
+        ]
+    });
+});
+
+// Get user playlists
+app.get('/api/playlists', authenticateToken, async (req, res) => {
+    console.log('📋 GET /api/playlists endpoint hit');
+    try {
+        const playlists = await Playlist.find({ userId: req.user.userId })
+            .sort({ updatedAt: -1 }); // Sort by newest first
+
+        console.log('📋 Found playlists:', playlists.length);
+        res.json(playlists);
+    } catch (error) {
+        console.error('Error fetching playlists:', error);
+        res.status(500).json({ error: 'Failed to fetch playlists.' });
+    }
+});
+
+// Create new playlist
+app.post('/api/playlists', authenticateToken, async (req, res) => {
+    console.log('📋 POST /api/playlists endpoint hit');
+    try {
+        const { name, songs } = req.body;
+        console.log('📋 Creating playlist:', name, 'with songs:', songs);
+
+        if (!name) {
+            return res.status(400).json({ error: 'Playlist name is required.' });
+        }
+
+        // Create new playlist
+        const playlist = new Playlist({
+            userId: req.user.userId,
+            username: req.user.username,
+            name: name,
+            songs: songs || [] // Use provided songs or empty array
+        });
+
+        await playlist.save();
+        console.log('✅ Playlist saved to database:', playlist);
+        res.status(201).json(playlist);
+    } catch (error) {
+        console.error('Error creating playlist:', error);
+        res.status(500).json({ error: 'Failed to create playlist.' });
+    }
+});
+
+// Update playlist (add/remove songs)
+app.put('/api/playlists/:id', authenticateToken, async (req, res) => {
+    try {
+        const { songs } = req.body;
+
+        const playlist = await Playlist.findOne({ 
+            _id: req.params.id, 
+            userId: req.user.userId 
+        });
+
+        if (!playlist) {
+            return res.status(404).json({ error: 'Playlist not found.' });
+        }
+
+        playlist.songs = songs;
+        playlist.updatedAt = new Date();
+        await playlist.save();
+
+        res.json(playlist);
+    } catch (error) {
+        console.error('Error updating playlist:', error);
+        res.status(500).json({ error: 'Failed to update playlist.' });
+    }
+});
+
+// Delete playlist
+app.delete('/api/playlists/:id', authenticateToken, async (req, res) => {
+    try {
+        const playlist = await Playlist.findOne({
+            _id: req.params.id,
+            userId: req.user.userId
+        });
+
+        if (!playlist) {
+            return res.status(404).json({ error: 'Playlist not found.' });
+        }
+
+        await Playlist.deleteOne({ _id: req.params.id });
+        res.json({ message: 'Playlist deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting playlist:', error);
+        res.status(500).json({ error: 'Failed to delete playlist.' });
     }
 });
 
