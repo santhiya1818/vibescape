@@ -9,7 +9,12 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+        ? ['https://vibescape-jmss.onrender.com'] 
+        : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
@@ -118,6 +123,7 @@ async function createAdminUser() {
 // Authentication Routes
 app.post('/api/auth/register', async (req, res) => {
     try {
+        console.log('Registration attempt:', req.body);
         const { username, email, password } = req.body;
 
         // Check if user already exists
@@ -126,6 +132,7 @@ app.post('/api/auth/register', async (req, res) => {
         });
         
         if (existingUser) {
+            console.log('User already exists:', email);
             return res.status(400).json({ 
                 error: 'User with this email or username already exists' 
             });
@@ -142,6 +149,7 @@ app.post('/api/auth/register', async (req, res) => {
         });
 
         await user.save();
+        console.log('User created successfully:', email);
 
         // Generate JWT token
         const token = jwt.sign(
