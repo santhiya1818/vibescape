@@ -165,6 +165,9 @@
                     <button onclick="loadSongs(true)" class="upload-btn" style="background: #28a745; padding: 10px 20px; font-size: 14px; width: auto;">
                         <i class="fa-solid fa-refresh"></i> Refresh List
                     </button>
+                    <button id="toggleViewBtn" class="upload-btn" style="background:#0066cc; padding: 10px 20px; font-size:14px; width:auto;">
+                        <i class="fa-solid fa-list"></i> Artist View
+                    </button>
                     <button onclick="clearAllSongs()" class="delete-btn" style="background: #dc3545; padding: 10px 20px; font-size: 14px;">
                         <i class="fa-solid fa-trash-can"></i> Clear All Songs
                     </button>
@@ -329,6 +332,13 @@
         }
 
         // Global updateStats function
+        let isArtistView = false; // toggles artist-wise grouping in admin
+
+        function toggleArtistViewButtonText(btn) {
+            if (!btn) return;
+            btn.innerHTML = isArtistView ? '<i class="fa-solid fa-list"></i> Flat View' : '<i class="fa-solid fa-list"></i> Artist View';
+        }
+
         function updateStats(songs) {
             const totalSongs = songs.length;
             const uniqueArtists = [...new Set(songs.map(song => song.artist))].length;
@@ -366,28 +376,87 @@
                     updateStats([]);
                     return;
                 }
+                // Render either flat list or grouped-by-artist view
                 songsList.innerHTML = '';
-                songs.forEach(song => {
-                    const uploadDate = song.uploaddate ? new Date(song.uploaddate).toLocaleString() : 
-                                     song.createdAt ? new Date(song.createdAt).toLocaleString() : 'Unknown';
-                    const songItem = document.createElement('div');
-                    songItem.className = 'song-item';
-                    
-                    songItem.innerHTML = `
-                        <div class="song-details">
-                            <h4><i class="fa-solid fa-music"></i> ${song.title || 'Unknown Title'}</h4>
-                            <p><i class="fa-solid fa-user"></i> <strong>Artist:</strong> ${song.artist || 'Unknown Artist'}</p>
-                            <p><i class="fa-solid fa-tags"></i> <strong>Genre:</strong> ${song.genre || 'Unknown'}</p>
-                            <p><i class="fa-solid fa-calendar"></i> <strong>Uploaded:</strong> ${uploadDate}</p>
-                        </div>
-                        <div class="song-actions">
-                            <button class="delete-btn" onclick="deleteSong('${song._id}', '${song.title}')">
-                                <i class="fa-solid fa-trash"></i> Delete
-                            </button>
-                        </div>
-                    `;
-                    songsList.appendChild(songItem);
-                });
+
+                if (isArtistView) {
+                    // Group songs by artist
+                    const grouped = songs.reduce((acc, s) => {
+                        const artist = (s.artist && s.artist.trim()) || 'Unknown Artist';
+                        if (!acc[artist]) acc[artist] = [];
+                        acc[artist].push(s);
+                        return acc;
+                    }, {});
+
+                    const sortedArtists = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+                    sortedArtists.forEach(artist => {
+                        const artistSection = document.createElement('div');
+                        artistSection.className = 'artist-section';
+                        artistSection.style.marginBottom = '18px';
+
+                        const header = document.createElement('div');
+                        header.style.display = 'flex';
+                        header.style.justifyContent = 'space-between';
+                        header.style.alignItems = 'center';
+                        header.style.marginBottom = '8px';
+
+                        const h = document.createElement('h3');
+                        h.style.margin = '0';
+                        h.style.fontSize = '1.05rem';
+                        h.innerHTML = `<i class="fa-solid fa-user"></i> ${artist} <small style="color:#ccc; font-size:0.85rem;">(${grouped[artist].length})</small>`;
+
+                        header.appendChild(h);
+                        artistSection.appendChild(header);
+
+                        grouped[artist].forEach(song => {
+                            const uploadDate = song.uploaddate ? new Date(song.uploaddate).toLocaleString() : 
+                                             song.createdAt ? new Date(song.createdAt).toLocaleString() : 'Unknown';
+                            const songItem = document.createElement('div');
+                            songItem.className = 'song-item';
+                            songItem.style.marginLeft = '8px';
+                            songItem.style.padding = '10px';
+                            songItem.innerHTML = `
+                                <div class="song-details">
+                                    <h4 style="margin:0;"><i class="fa-solid fa-music"></i> ${song.title || 'Unknown Title'}</h4>
+                                    <p style="margin:4px 0 0 0; color:var(--subtext-color); font-size:0.9em;"><i class="fa-solid fa-tags"></i> <strong>Genre:</strong> ${song.genre || 'Unknown'}</p>
+                                    <p style="margin:4px 0 0 0; color:var(--subtext-color); font-size:0.9em;"><i class="fa-solid fa-calendar"></i> <strong>Uploaded:</strong> ${uploadDate}</p>
+                                </div>
+                                <div class="song-actions">
+                                    <button class="delete-btn" onclick="deleteSong('${song._id}', '${song.title}')">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            `;
+                            artistSection.appendChild(songItem);
+                        });
+
+                        songsList.appendChild(artistSection);
+                    });
+                } else {
+                    // Flat list view (original behaviour)
+                    songs.forEach(song => {
+                        const uploadDate = song.uploaddate ? new Date(song.uploaddate).toLocaleString() : 
+                                         song.createdAt ? new Date(song.createdAt).toLocaleString() : 'Unknown';
+                        const songItem = document.createElement('div');
+                        songItem.className = 'song-item';
+                        
+                        songItem.innerHTML = `
+                            <div class="song-details">
+                                <h4><i class="fa-solid fa-music"></i> ${song.title || 'Unknown Title'}</h4>
+                                <p><i class="fa-solid fa-user"></i> <strong>Artist:</strong> ${song.artist || 'Unknown Artist'}</p>
+                                <p><i class="fa-solid fa-tags"></i> <strong>Genre:</strong> ${song.genre || 'Unknown'}</p>
+                                <p><i class="fa-solid fa-calendar"></i> <strong>Uploaded:</strong> ${uploadDate}</p>
+                            </div>
+                            <div class="song-actions">
+                                <button class="delete-btn" onclick="deleteSong('${song._id}', '${song.title}')">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        `;
+                        songsList.appendChild(songItem);
+                    });
+                }
+
                 updateStats(songs);
             } catch (error) {
                 console.error('Load songs error:', error);
@@ -429,6 +498,17 @@
 
         const uploadForm = document.getElementById('uploadForm');
         const uploadBtn = document.getElementById('uploadBtn');
+
+        // Toggle view button setup
+        const toggleViewBtn = document.getElementById('toggleViewBtn');
+        if (toggleViewBtn) {
+            toggleArtistViewButtonText(toggleViewBtn);
+            toggleViewBtn.addEventListener('click', () => {
+                isArtistView = !isArtistView;
+                toggleArtistViewButtonText(toggleViewBtn);
+                loadSongs();
+            });
+        }
 
         // Upload form submission
         uploadForm.addEventListener('submit', async (e) => {
